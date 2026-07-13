@@ -1,0 +1,299 @@
+/**
+ * base.css — Design tokens, typography scale, and grid utilities.
+ *
+ * Source of truth: docs/BRAND_BRIEF.md
+ *
+ * This file holds every FIXED brand-system token (spacing, radius,
+ * shadow, motion, type scale, grid/container). These are brand-system
+ * decisions, not per-merchant preferences, so they live here as plain
+ * CSS rather than as Theme Editor settings (see BRAND_BRIEF.md §4-5).
+ *
+ * Colors and font families are the two token groups merchants CAN edit
+ * from the Theme Editor (BRAND_BRIEF.md §2-3). Those are emitted as
+ * CSS custom properties by `snippets/css-variables.liquid` from
+ * `settings_schema.json`, not defined here — but every rule below
+ * references them by name (--color-*, --font-*) so this file never
+ * hardcodes a brand color or font.
+ *
+ * Do not hardcode any of the values below into an individual section
+ * file — always reference the custom property.
+ */
+
+:root {
+  /* ---------------------------------------------------------------
+   * Spacing scale — 8px base unit (BRAND_BRIEF.md §4)
+   * --------------------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+  --space-7: 64px;
+  --space-8: 96px;
+  --space-9: 128px;
+
+  /* Section vertical rhythm — the default padding-top/bottom for every
+     homepage module. Individual sections should expose this as an
+     overridable setting (see Phase 3), but this is the default.
+     56px doesn't fall on the 8px scale steps listed above (the brief
+     lists both the scale and this value separately), so it's a
+     literal value here rather than a --space-* reference. */
+  --section-padding-mobile: 56px;
+  --section-padding-desktop: var(--space-8); /* 96px */
+
+  /* ---------------------------------------------------------------
+   * Type scale (BRAND_BRIEF.md §3)
+   * --------------------------------------------------------------- */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 28px;
+  --text-2xl: 40px;
+  --text-3xl: 56px;
+
+  /* Hero headline on mobile — the brief specifies --text-3xl is
+     "desktop only, scale down on mobile" without giving an exact
+     value. 36px is my assumption; flagged as an open decision. */
+  --text-3xl-mobile: 36px;
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.25;
+  --leading-normal: 1.5;
+
+  --tracking-eyebrow: 0.08em;
+
+  /* ---------------------------------------------------------------
+   * Border radius (BRAND_BRIEF.md §5)
+   * --------------------------------------------------------------- */
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-lg: 24px;
+
+  /* ---------------------------------------------------------------
+   * Shadow (BRAND_BRIEF.md §5) — warm-tinted, uses --color-ink at
+   * low opacity rather than generic black.
+   * --------------------------------------------------------------- */
+  --shadow-soft: 0 4px 24px rgba(46, 42, 38, 0.08);
+
+  /* ---------------------------------------------------------------
+   * Motion (BRAND_BRIEF.md §5)
+   * --------------------------------------------------------------- */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+
+  /* ---------------------------------------------------------------
+   * Container & grid (BRAND_BRIEF.md §4)
+   *
+   * --page-width / --page-margin drive the existing full-bleed grid
+   * in assets/critical.css (`.shopify-section`). These were
+   * previously merchant settings (max_page_width / min_page_margin);
+   * per Phase 1 directive #2 they're now fixed brand-system tokens.
+   * See the Phase 1 summary for why this changed.
+   * --------------------------------------------------------------- */
+  --page-width: 1440px;
+  --page-margin: var(--space-4); /* 24px — mobile & tablet gutter */
+
+  --grid-columns: 12;
+  --grid-gutter: var(--space-3); /* 16px mobile gutter */
+
+  /* ---------------------------------------------------------------
+   * Breakpoints, for reference only (custom properties can't be used
+   * inside @media conditions — these values are hardcoded into every
+   * media query below and should stay in sync with this list):
+   *   mobile:       0–749px   (default / unprefixed)
+   *   tablet:       750–999px
+   *   desktop:      1000–1439px
+   *   wide-desktop: 1440px+
+   * --------------------------------------------------------------- */
+}
+
+@media (min-width: 750px) {
+  :root {
+    --grid-gutter: var(--space-4); /* 24px desktop gutter, from grid-gutters:24px */
+  }
+}
+
+@media (min-width: 1000px) {
+  :root {
+    --page-margin: var(--space-6); /* 48px — desktop gutter */
+  }
+}
+
+/* =====================================================================
+   Typography
+   ===================================================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  color: var(--color-ink);
+}
+
+/* Default (un-classed) heading sizes — a sensible fallback scale for
+   long-form / CMS content (blog articles, page body) where no size
+   utility class is applied. Sections should prefer the explicit
+   .text-* utility classes below so visual size stays decoupled from
+   semantic heading level (a PDP h1 and a hero h1 are not the same
+   size — see Phase 1 summary). */
+h1 {
+  font-size: var(--text-2xl);
+}
+h2 {
+  font-size: var(--text-xl);
+}
+h3 {
+  font-size: var(--text-lg);
+}
+h4,
+h5,
+h6 {
+  font-size: var(--text-base);
+}
+
+/* Size utility classes — decoupled from semantic tag on purpose. */
+.text-xs {
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+.text-sm {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+.text-base {
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+}
+.text-lg {
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+.text-xl {
+  font-size: var(--text-xl);
+  line-height: var(--leading-snug);
+}
+.text-2xl {
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+}
+.text-3xl {
+  font-size: var(--text-3xl-mobile);
+  line-height: var(--leading-tight);
+}
+@media (min-width: 1000px) {
+  .text-3xl {
+    font-size: var(--text-3xl);
+  }
+}
+
+/* Eyebrow / label — the recurring "editorial label" device used above
+   section headings and on category labels (BRAND_BRIEF.md §3). */
+.eyebrow {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow);
+  color: var(--color-ink-muted);
+}
+
+small,
+.caption {
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+}
+
+.legal {
+  font-size: var(--text-xs);
+  color: var(--color-ink-muted);
+}
+
+/* =====================================================================
+   Container
+   ===================================================================== */
+
+/**
+ * .container centers content at the brand max-width with the
+ * responsive side gutter. Use inside a `.shopify-section > *` child
+ * when a section needs a constrained wrapper of its own (most
+ * sections instead rely on the existing .shopify-section grid in
+ * critical.css, which already centers content at --page-width).
+ */
+.container {
+  width: 100%;
+  max-width: var(--page-width);
+  margin-inline: auto;
+  padding-inline: var(--page-margin);
+}
+
+/* =====================================================================
+   12-column grid utility (BRAND_BRIEF.md §4)
+   ===================================================================== */
+
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns), 1fr);
+  gap: var(--grid-gutter);
+}
+
+.col-span-1 { grid-column: span 1; }
+.col-span-2 { grid-column: span 2; }
+.col-span-3 { grid-column: span 3; }
+.col-span-4 { grid-column: span 4; }
+.col-span-5 { grid-column: span 5; }
+.col-span-6 { grid-column: span 6; }
+.col-span-7 { grid-column: span 7; }
+.col-span-8 { grid-column: span 8; }
+.col-span-9 { grid-column: span 9; }
+.col-span-10 { grid-column: span 10; }
+.col-span-11 { grid-column: span 11; }
+.col-span-12 { grid-column: span 12; }
+.col-span-full { grid-column: 1 / -1; }
+
+@media (min-width: 750px) {
+  .col-span-1-tablet { grid-column: span 1; }
+  .col-span-2-tablet { grid-column: span 2; }
+  .col-span-3-tablet { grid-column: span 3; }
+  .col-span-4-tablet { grid-column: span 4; }
+  .col-span-5-tablet { grid-column: span 5; }
+  .col-span-6-tablet { grid-column: span 6; }
+  .col-span-7-tablet { grid-column: span 7; }
+  .col-span-8-tablet { grid-column: span 8; }
+  .col-span-9-tablet { grid-column: span 9; }
+  .col-span-10-tablet { grid-column: span 10; }
+  .col-span-11-tablet { grid-column: span 11; }
+  .col-span-12-tablet { grid-column: span 12; }
+}
+
+@media (min-width: 1000px) {
+  .col-span-1-desktop { grid-column: span 1; }
+  .col-span-2-desktop { grid-column: span 2; }
+  .col-span-3-desktop { grid-column: span 3; }
+  .col-span-4-desktop { grid-column: span 4; }
+  .col-span-5-desktop { grid-column: span 5; }
+  .col-span-6-desktop { grid-column: span 6; }
+  .col-span-7-desktop { grid-column: span 7; }
+  .col-span-8-desktop { grid-column: span 8; }
+  .col-span-9-desktop { grid-column: span 9; }
+  .col-span-10-desktop { grid-column: span 10; }
+  .col-span-11-desktop { grid-column: span 11; }
+  .col-span-12-desktop { grid-column: span 12; }
+}
+
+/* =====================================================================
+   Motion utility
+   ===================================================================== */
+
+.transition-standard {
+  transition-duration: var(--duration-base);
+  transition-timing-function: var(--ease-standard);
+}
