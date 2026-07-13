@@ -7,18 +7,29 @@
     {% comment %}
       Font preloading:
       1. Preconnect to font CDN for faster connection
-      2. Preload only the critical font variant (base weight)
-      3. Additional variants load on-demand via @font-face
+      2. Preload only the critical font variant (base weight) for each
+         of the two brand fonts (body copy + display/heading)
+      3. Additional variants (bold, italic) load on-demand via @font-face
     {% endcomment %}
-    {% unless settings.type_primary_font.system? %}
+    {% unless settings.type_body_font.system? and settings.type_header_font.system? %}
       <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+    {% endunless %}
 
-      {% comment %} Preload the base font variant for initial page render {% endcomment %}
-      {{ settings.type_primary_font | font_url | preload_tag: as: 'font', crossorigin: 'anonymous' }}
+    {% unless settings.type_body_font.system? %}
+      {% comment %} Preload the body font — used for the majority of on-screen text {% endcomment %}
+      {{ settings.type_body_font | font_url | preload_tag: as: 'font', crossorigin: 'anonymous' }}
+    {% endunless %}
+
+    {% unless settings.type_header_font.system? %}
+      {% comment %} Preload the display font — typically the hero headline / LCP element {% endcomment %}
+      {{ settings.type_header_font | font_url | preload_tag: as: 'font', crossorigin: 'anonymous' }}
     {% endunless %}
 
     {% # Load and preload the critical CSS %}
     {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
+
+    {% # Load and preload the brand design tokens, type scale, and grid utilities %}
+    {{ 'base.css' | asset_url | stylesheet_tag: preload: true }}
 
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
