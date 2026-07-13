@@ -10,6 +10,8 @@
     "collection_card": "Collection card",
     "collections_grid": "Collections grid",
     "colors": "Colors",
+    "colors_base": "Base",
+    "colors_accent": "Accent",
     "column": "Column",
     "content": "Content",
     "custom_section": "Custom section",
@@ -48,7 +50,19 @@
     "page_width": "Page width",
     "show_payment_icons": "Show payment icons",
     "text_style": "Text style",
-    "text": "Text"
+    "text": "Text",
+    "heading_font": "Heading font",
+    "body_font": "Body font",
+    "color_bg": "Background",
+    "color_surface": "Surface",
+    "color_ink": "Text",
+    "color_ink_muted": "Muted text",
+    "color_clay": "Primary accent (CTA)",
+    "color_clay_dark": "Primary accent — hover/active",
+    "color_blush": "Secondary accent",
+    "color_sage": "Tertiary accent",
+    "color_sand": "Borders & dividers",
+    "color_white": "Pure white"
   },
   "options": {
     "alignment": {
@@ -72,6 +86,13 @@
       "title": "Title",
       "subtitle": "Subtitle",
       "normal": "Normal text"
-    },
+    }
+  },
+  "info": {
+    "heading_font": "Used for headlines and section titles. Defaults to Fraunces per the brand brief — verify it's available in the font picker (search \"Fraunces\"); fall back to Lora if not.",
+    "color_bg": "The default page background everywhere — not white. See docs/BRAND_BRIEF.md for full usage rules.",
+    "color_bg_only": "Background use only — does not pass contrast for text at small sizes.",
+    "color_clay": "The single primary-action color, used consistently for every CTA. Avoid introducing a second button color.",
+    "color_sage": "An accent — keep usage small (badges, seasonal callouts). Should never fill a full section background."
   }
 }
