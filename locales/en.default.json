@@ -17,7 +17,16 @@
     "checkout": "Checkout",
     "title": "Cart",
     "update": "Update",
-    "remove": "Remove"
+    "remove": "Remove",
+    "add": "Add",
+    "subtotal": "Subtotal",
+    "view_cart": "View cart",
+    "empty": "Your cart is empty",
+    "continue_shopping": "Continue shopping",
+    "decrease_quantity": "Decrease quantity",
+    "increase_quantity": "Increase quantity",
+    "free_shipping_reached": "You've unlocked free shipping",
+    "free_shipping_remaining_html": "You're {{ amount }} away from free shipping"
   },
   "customers": {
     "login": {
@@ -30,12 +39,25 @@
   "collections": {
     "title": "Collections"
   },
+  "general": {
+    "primary_navigation": "Primary navigation",
+    "search": "Search",
+    "cart": "Cart",
+    "menu": "Menu",
+    "close": "Close",
+    "dismiss": "Dismiss"
+  },
   "gift_card": {
     "add_to_apple_wallet": "Add to Apple Wallet",
     "card": "Gift card",
     "expired": "This gift card has expired",
     "expires_on": "Expires on {{ expires_on }}",
     "use_at_checkout": "Use this gift card at checkout"
+  },
+  "newsletter": {
+    "success": "Thanks for signing up.",
+    "placeholder": "Email address",
+    "submit": "Sign up"
   },
   "password": {
     "title": "This shop is private",
