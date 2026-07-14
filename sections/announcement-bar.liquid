@@ -1,0 +1,189 @@
+{% doc %}
+  Slim announcement bar rendered above the header — seasonal launches,
+  free-shipping threshold messaging, etc. Lives as its own section (not
+  hardcoded into the header) so it can be reordered/disabled independently.
+{% enddoc %}
+
+{% liquid
+  assign message_count = section.blocks.size
+%}
+
+{% if message_count > 0 %}
+  <announcement-bar
+    class="announcement-bar announcement-bar--{{ section.settings.background_style }} full-width"
+    data-dismissible="{{ section.settings.dismissible }}"
+    data-auto-rotate="{{ section.settings.auto_rotate }}"
+    data-rotate-speed="{{ section.settings.rotate_speed }}"
+    data-storage-key="hedgerow:announcement-dismissed:{{ section.id }}"
+  >
+    <div class="announcement-bar__track" role="list">
+      {% content_for 'blocks' %}
+    </div>
+
+    {% if section.settings.dismissible %}
+      <button type="button" class="announcement-bar__dismiss" aria-label="{{ 'general.dismiss' | t }}">
+        {{ 'icon-close.svg' | inline_asset_content }}
+      </button>
+    {% endif %}
+  </announcement-bar>
+{% endif %}
+
+{% stylesheet %}
+  .announcement-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    min-height: 2.75rem;
+    padding-inline: var(--page-margin);
+    text-align: center;
+  }
+  .announcement-bar--ink {
+    background-color: var(--color-ink);
+    color: var(--color-bg);
+  }
+  .announcement-bar--clay {
+    background-color: var(--color-clay);
+    color: var(--color-white);
+  }
+  .announcement-bar--surface {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+  }
+  .announcement-bar[hidden] {
+    display: none;
+  }
+
+  .announcement-bar__track {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    justify-items: center;
+  }
+  /* All messages share the same grid cell; JS toggles which one is
+     visible. With one message (the common case) this is just a
+     centered line — no JS required. */
+  .announcement-bar__message {
+    grid-area: 1 / 1;
+    color: inherit;
+    text-decoration: none;
+    opacity: 1;
+    transition: opacity var(--duration-base) var(--ease-standard);
+  }
+  .announcement-bar__message:not(.is-active) {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .announcement-bar__dismiss {
+    position: absolute;
+    right: var(--page-margin);
+    display: flex;
+    color: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .announcement-bar__dismiss svg {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  class AnnouncementBar extends HTMLElement {
+    connectedCallback() {
+      this.storageKey = this.dataset.storageKey;
+
+      if (this.dataset.dismissible === 'true' && sessionStorage.getItem(this.storageKey)) {
+        this.hidden = true;
+        return;
+      }
+
+      this.messages = Array.from(this.querySelectorAll('.announcement-bar__message'));
+      if (this.messages.length) {
+        this.messages[0].classList.add('is-active');
+      }
+
+      const dismissButton = this.querySelector('.announcement-bar__dismiss');
+      if (dismissButton) {
+        dismissButton.addEventListener('click', () => this.dismiss());
+      }
+
+      if (this.dataset.autoRotate === 'true' && this.messages.length > 1) {
+        const seconds = parseFloat(this.dataset.rotateSpeed) || 6;
+        this.activeIndex = 0;
+        this.interval = setInterval(() => this.rotate(), seconds * 1000);
+      }
+    }
+
+    rotate() {
+      this.messages[this.activeIndex].classList.remove('is-active');
+      this.activeIndex = (this.activeIndex + 1) % this.messages.length;
+      this.messages[this.activeIndex].classList.add('is-active');
+    }
+
+    dismiss() {
+      sessionStorage.setItem(this.storageKey, 'true');
+      this.hidden = true;
+      if (this.interval) clearInterval(this.interval);
+    }
+
+    disconnectedCallback() {
+      if (this.interval) clearInterval(this.interval);
+    }
+  }
+
+  customElements.define('announcement-bar', AnnouncementBar);
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "t:general.announcement_bar",
+  "blocks": [{ "type": "announcement-message" }],
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "select",
+      "id": "background_style",
+      "label": "t:labels.background_style",
+      "options": [
+        { "value": "ink", "label": "t:options.background_style.ink" },
+        { "value": "clay", "label": "t:options.background_style.clay" },
+        { "value": "surface", "label": "t:options.background_style.surface" }
+      ],
+      "default": "ink"
+    },
+    {
+      "type": "checkbox",
+      "id": "dismissible",
+      "label": "t:labels.dismissible",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "auto_rotate",
+      "label": "t:labels.auto_rotate",
+      "default": true,
+      "info": "t:info.auto_rotate"
+    },
+    {
+      "type": "range",
+      "id": "rotate_speed",
+      "label": "t:labels.rotate_speed",
+      "min": 3,
+      "max": 15,
+      "step": 1,
+      "unit": "s",
+      "default": 6
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.announcement_bar",
+      "blocks": [{ "type": "announcement-message" }]
+    }
+  ]
+}
+{% endschema %}
