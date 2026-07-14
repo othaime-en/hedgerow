@@ -1,0 +1,44 @@
+{% doc %}
+  Renders one cart line item inside the cart drawer. Also used as the
+  structural reference for the client-side template the drawer's JS
+  builds after /cart/change.js calls, so keep the class names in sync
+  with cart-drawer.liquid's `renderItem()` function if you edit this.
+
+  @param {object} item - a cart line item (from cart.items)
+
+  @example
+  {% render 'cart-drawer-item', item: item %}
+{% enddoc %}
+
+<li class="cart-drawer-item" data-cart-drawer-item data-line-key="{{ item.key }}">
+  <a href="{{ item.url }}" class="cart-drawer-item__image">
+    {% if item.image %}
+      {{ item.image | image_url: width: 160 | image_tag: loading: 'lazy', sizes: '80px' }}
+    {% endif %}
+  </a>
+
+  <div class="cart-drawer-item__details">
+    <a href="{{ item.url }}" class="cart-drawer-item__title text-base">{{ item.product.title }}</a>
+    {% if item.variant.title != 'Default Title' %}
+      <p class="cart-drawer-item__variant text-sm">{{ item.variant.title }}</p>
+    {% endif %}
+
+    <div class="cart-drawer-item__row">
+      <div class="quantity-stepper" data-quantity-stepper>
+        <button type="button" class="quantity-stepper__button" data-quantity-decrease aria-label="{{ 'cart.decrease_quantity' | t }}">
+          {{ 'icon-minus.svg' | inline_asset_content }}
+        </button>
+        <span class="quantity-stepper__value" data-quantity-value>{{ item.quantity }}</span>
+        <button type="button" class="quantity-stepper__button" data-quantity-increase aria-label="{{ 'cart.increase_quantity' | t }}">
+          {{ 'icon-plus.svg' | inline_asset_content }}
+        </button>
+      </div>
+
+      <p class="cart-drawer-item__price text-base">{{ item.final_line_price | money }}</p>
+    </div>
+
+    <button type="button" class="cart-drawer-item__remove text-sm" data-cart-drawer-remove>
+      {{ 'cart.remove' | t }}
+    </button>
+  </div>
+</li>
