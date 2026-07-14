@@ -11,12 +11,23 @@
   "type": "header",
   "name": "t:general.header",
   "sections": {
+    "announcement-bar": {
+      "type": "announcement-bar",
+      "blocks": {
+        "message-1": {
+          "type": "announcement-message",
+          "settings": {
+            "text": "Free shipping over $75"
+          }
+        }
+      },
+      "block_order": ["message-1"],
+      "settings": {}
+    },
     "header": {
       "type": "header",
       "settings": {}
     }
   },
-  "order": [
-    "header"
-  ],
+  "order": ["announcement-bar", "header"]
 }
