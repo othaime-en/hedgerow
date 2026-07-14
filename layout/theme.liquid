@@ -43,5 +43,8 @@
     {{ content_for_layout }}
 
     {% sections 'footer-group' %}
+
+    {% # Persistent cart-drawer overlay — see sections/cart-drawer.liquid %}
+    {% section 'cart-drawer' %}
   </body>
 </html>
