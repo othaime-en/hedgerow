@@ -1,0 +1,36 @@
+{% doc %}
+  A single message in the announcement bar's rotation.
+
+  @example
+  {% content_for 'block', type: 'announcement-message', id: 'msg-1' %}
+{% enddoc %}
+
+{% if block.settings.url != blank %}
+  <a class="announcement-bar__message text-sm" href="{{ block.settings.url }}" {{ block.shopify_attributes }}>
+    {{ block.settings.text }}
+  </a>
+{% else %}
+  <p class="announcement-bar__message text-sm" {{ block.shopify_attributes }}>
+    {{ block.settings.text }}
+  </p>
+{% endif %}
+
+{% schema %}
+{
+  "name": "t:general.announcement_message",
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:labels.text",
+      "default": "Free shipping over $75"
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": "t:labels.link"
+    }
+  ],
+  "presets": [{ "name": "t:general.announcement_message" }]
+}
+{% endschema %}
