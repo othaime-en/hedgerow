@@ -1,0 +1,111 @@
+{% doc %}
+  A single top-level primary navigation item. Renders as a plain link
+  when it has no nested blocks, or as an accessible <details>/<summary>
+  disclosure with a mega-menu panel when it contains mega-menu-links,
+  mega-menu-featured, and/or mega-menu-shop-by blocks.
+
+  <details> gives keyboard/click support with zero JS by default; the
+  <site-navigation> custom element wrapping the nav in sections/header.liquid
+  progressively enhances it with hover-intent, Escape-to-close, and
+  mutual exclusivity between panels.
+
+  @example
+  {% content_for 'block', type: 'mega-menu-item', id: 'nav-1' %}
+{% enddoc %}
+
+{% if block.blocks.size > 0 %}
+  <details class="mega-menu" {{ block.shopify_attributes }}>
+    <summary class="mega-menu__trigger">
+      {{ block.settings.label }}
+      {{ 'icon-chevron-down.svg' | inline_asset_content }}
+    </summary>
+    <div class="mega-menu__panel">
+      <div class="mega-menu__panel-inner">
+        {% content_for 'blocks' %}
+      </div>
+    </div>
+  </details>
+{% else %}
+  <a class="mega-menu__trigger mega-menu__trigger--plain" href="{{ block.settings.url | default: '#' }}" {{ block.shopify_attributes }}>
+    {{ block.settings.label }}
+  </a>
+{% endif %}
+
+{% stylesheet %}
+  .mega-menu {
+    position: relative;
+  }
+  .mega-menu__trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-2) 0;
+    font-size: var(--text-base);
+    color: var(--color-ink);
+    text-decoration: none;
+    cursor: pointer;
+    list-style: none;
+  }
+  .mega-menu__trigger::-webkit-details-marker {
+    display: none;
+  }
+  .mega-menu__trigger svg {
+    width: 0.85rem;
+    height: 0.85rem;
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  .mega-menu[open] > .mega-menu__trigger svg {
+    transform: rotate(180deg);
+  }
+  .mega-menu__trigger--plain:hover,
+  .mega-menu__trigger:hover {
+    color: var(--color-clay);
+  }
+
+  .mega-menu__panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: var(--z-dropdown);
+    padding-top: var(--space-3);
+    /* opacity/transform used instead of display so hover-intent JS can
+       animate the panel; <details open> still controls visibility via
+       the panel's own display below. */
+  }
+  .mega-menu__panel-inner {
+    display: flex;
+    gap: var(--space-7);
+    padding: var(--space-5);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-sand);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    white-space: nowrap;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.mega_menu_item",
+  "blocks": [
+    { "type": "mega-menu-links" },
+    { "type": "mega-menu-featured" },
+    { "type": "mega-menu-shop-by" }
+  ],
+  "settings": [
+    {
+      "type": "text",
+      "id": "label",
+      "label": "t:labels.label",
+      "default": "Menu item"
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": "t:labels.link",
+      "info": "t:info.mega_menu_item_url"
+    }
+  ],
+  "presets": [{ "name": "t:general.mega_menu_item" }]
+}
+{% endschema %}
