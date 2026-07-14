@@ -1,0 +1,65 @@
+{% doc %}
+  Renders one text-link column inside a mega-menu panel. The merchant
+  points this at an existing Online Store > Navigation menu, so editing
+  the links doesn't require touching the theme.
+
+  @example
+  {% content_for 'block', type: 'mega-menu-links', id: 'links' %}
+{% enddoc %}
+
+{% if block.settings.menu != blank %}
+  <div class="mega-menu-links" {{ block.shopify_attributes }}>
+    {% if block.settings.heading != blank %}
+      <span class="eyebrow">{{ block.settings.heading }}</span>
+    {% endif %}
+    <ul class="mega-menu-links__list" role="list">
+      {% for link in block.settings.menu.links %}
+        <li>
+          <a class="mega-menu-links__link text-base" href="{{ link.url }}">{{ link.title }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  .mega-menu-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-width: 10rem;
+  }
+  .mega-menu-links__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    list-style: none;
+    padding: 0;
+  }
+  .mega-menu-links__link {
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  .mega-menu-links__link:hover {
+    color: var(--color-clay);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.mega_menu_links",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.column_heading"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "t:labels.menu"
+    }
+  ],
+  "presets": [{ "name": "t:general.mega_menu_links" }]
+}
+{% endschema %}
