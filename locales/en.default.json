@@ -69,6 +69,11 @@
     "placeholder": "Search articles, pages, or products",
     "submit": "Search",
     "no_results_html": "No results found for {{ terms }}",
-    "results_for_html": "{{ count }} results found for {{ terms }}"
+    "results_for_html": "{{ count }} results found for {{ terms }}",
+    "products": "Products",
+    "collections": "Collections",
+    "pages": "Pages",
+    "articles": "Journal",
+    "view_all_html": "View all results for \u201c{{ terms }}\u201d"
   }
 }
