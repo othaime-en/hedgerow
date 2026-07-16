@@ -1,0 +1,457 @@
+{% doc %}
+  Cart drawer, rendered once via a standalone {% section %} call in
+  layout/theme.liquid (not part of a section group — it's a persistent
+  overlay, not reorderable page content).
+
+  After any add/change/remove, the JS re-fetches this section's markup
+  via the Section Rendering API (?section_id=cart-drawer) and swaps it
+  in. That means the free-shipping bar, line item prices, and upsell
+  list are always computed fresh by Liquid — the JS never formats
+  money or re-implements this section's logic client-side.
+{% enddoc %}
+{% liquid
+  assign threshold = section.settings.free_shipping_threshold
+  assign cart_product_ids = cart.items | map: 'product_id'
+%}
+
+<dialog
+  id="cart-drawer"
+  class="cart-drawer"
+  scroll-lock
+  aria-label="{{ 'cart.title' | t }}"
+  data-cart-add-url="{{ routes.cart_add_url }}.js"
+  data-cart-change-url="{{ routes.cart_change_url }}.js"
+  data-cart-url="{{ routes.cart_url }}"
+>
+  <div class="cart-drawer__inner">
+    <div class="cart-drawer__header">
+      <h2 class="text-lg">{{ 'cart.title' | t }} ({{ cart.item_count }})</h2>
+      <button type="button" class="cart-drawer__close" data-cart-drawer-close aria-label="{{ 'general.close' | t }}">
+        {{ 'icon-close.svg' | inline_asset_content }}
+      </button>
+    </div>
+
+    {% if threshold > 0 %}
+      {% liquid
+        assign threshold_cents = threshold | times: 100
+        assign remaining_cents = threshold_cents | minus: cart.total_price
+        assign progress = cart.total_price | times: 100.0 | divided_by: threshold_cents
+        if progress > 100
+          assign progress = 100
+        endif
+        if remaining_cents < 0
+          assign remaining_cents = 0
+        endif
+      %}
+      <div class="free-shipping-bar">
+        {% if remaining_cents == 0 %}
+          <p class="text-sm">{{ 'cart.free_shipping_reached' | t }}</p>
+        {% else %}
+          {% assign remaining_money = remaining_cents | money %}
+          <p class="text-sm">
+            {{ 'cart.free_shipping_remaining_html' | t: amount: remaining_money }}
+          </p>
+        {% endif %}
+        <div class="free-shipping-bar__track">
+          <div class="free-shipping-bar__fill" style="--progress: {{ progress }}%"></div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if cart.item_count == 0 %}
+      <div class="cart-drawer__empty">
+        <p class="text-base">{{ 'cart.empty' | t }}</p>
+        <a href="{{ routes.all_products_collection_url }}" class="button button--primary">{{ 'cart.continue_shopping' | t }}</a>
+      </div>
+    {% else %}
+      <ul class="cart-drawer__items" role="list">
+        {% for item in cart.items %}
+          {% render 'cart-drawer-item', item: item %}
+        {% endfor %}
+      </ul>
+
+      {% if section.settings.show_upsell and cart.items.first %}
+        {% assign upsell_collection = cart.items.first.product.collections.first %}
+        {% if upsell_collection %}
+          {% liquid
+            assign upsell_shown = 0
+          %}
+          <div class="cart-drawer__upsell">
+            <span class="eyebrow">{{ section.settings.upsell_heading }}</span>
+            <ul class="cart-drawer__upsell-list" role="list">
+              {% for product in upsell_collection.products %}
+                {% unless cart_product_ids contains product.id or upsell_shown == 3 %}
+                  <li class="upsell-card">
+                    <a href="{{ product.url }}" class="upsell-card__image">
+                      {% if product.featured_image %}
+                        {{ product.featured_image | image_url: width: 200 | image_tag: loading: 'lazy', sizes: '100px' }}
+                      {% endif %}
+                    </a>
+                    <div class="upsell-card__details">
+                      <a href="{{ product.url }}" class="text-sm">{{ product.title }}</a>
+                      <p class="text-sm">{{ product.price | money }}</p>
+                    </div>
+                    {% form 'product', product %}
+                      <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+                      <button type="submit" class="button button--secondary upsell-card__add text-sm" {% if product.selected_or_first_available_variant.available == false %}disabled{% endif %}>
+                        {{ 'cart.add' | t }}
+                      </button>
+                    {% endform %}
+                  </li>
+                  {% assign upsell_shown = upsell_shown | plus: 1 %}
+                {% endunless %}
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      {% endif %}
+
+      <div class="cart-drawer__footer">
+        <div class="cart-drawer__subtotal text-lg">
+          <span>{{ 'cart.subtotal' | t }}</span>
+          <span>{{ cart.total_price | money }}</span>
+        </div>
+        <a href="{{ routes.cart_url }}" class="button button--secondary">{{ 'cart.view_cart' | t }}</a>
+        <a href="{{ routes.cart_url }}/checkout" class="button button--primary">{{ 'cart.checkout' | t }}</a>
+      </div>
+    {% endif %}
+  </div>
+</dialog>
+
+{% stylesheet %}
+  .cart-drawer {
+    position: fixed;
+    inset-block: 0;
+    right: 0;
+    left: auto;
+    width: min(26rem, 100vw);
+    height: 100%;
+    max-height: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background-color: var(--color-bg);
+    box-shadow: var(--shadow-soft);
+  }
+  .cart-drawer::backdrop {
+    background-color: rgba(46, 42, 38, 0.4);
+  }
+  .cart-drawer__inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--space-5);
+    overflow-y: auto;
+  }
+  .cart-drawer__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-4);
+  }
+  .cart-drawer__close {
+    display: flex;
+    background: none;
+    border: none;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+  .cart-drawer__close svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .free-shipping-bar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+  }
+  .free-shipping-bar__track {
+    width: 100%;
+    height: 4px;
+    border-radius: 999px;
+    background-color: var(--color-sand);
+    overflow: hidden;
+  }
+  .free-shipping-bar__fill {
+    width: var(--progress);
+    height: 100%;
+    background-color: var(--color-clay);
+    transition: width var(--duration-base) var(--ease-standard);
+  }
+
+  .cart-drawer__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding-block: var(--space-6);
+  }
+
+  .cart-drawer__items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-5);
+  }
+  .cart-drawer-item {
+    display: flex;
+    gap: var(--space-3);
+  }
+  .cart-drawer-item__image {
+    display: block;
+    flex-shrink: 0;
+    width: 5rem;
+    height: 5rem;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background-color: var(--color-surface);
+  }
+  .cart-drawer-item__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .cart-drawer-item__details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    flex: 1;
+  }
+  .cart-drawer-item__title,
+  .cart-drawer-item__variant {
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  .cart-drawer-item__variant {
+    color: var(--color-ink-muted);
+  }
+  .cart-drawer-item__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--space-2);
+  }
+  .cart-drawer-item__remove {
+    align-self: flex-start;
+    margin-top: var(--space-1);
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--color-ink-muted);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .quantity-stepper {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    border: 1px solid var(--color-sand);
+    border-radius: var(--radius-sm);
+    padding: 2px var(--space-1);
+  }
+  .quantity-stepper__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    background: none;
+    border: none;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+  .quantity-stepper__button svg {
+    width: 0.6rem;
+    height: 0.6rem;
+  }
+
+  .cart-drawer__upsell {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-sand);
+    margin-bottom: var(--space-5);
+  }
+  .cart-drawer__upsell-list {
+    display: flex;
+    gap: var(--space-3);
+    list-style: none;
+    padding: 0;
+    margin-top: var(--space-3);
+    overflow-x: auto;
+  }
+  .upsell-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    width: 6.5rem;
+    flex-shrink: 0;
+  }
+  .upsell-card__image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background-color: var(--color-surface);
+  }
+  .upsell-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .upsell-card__add {
+    padding: var(--space-1);
+    width: 100%;
+  }
+
+  .cart-drawer__footer {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-sand);
+  }
+  .cart-drawer__subtotal {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-display);
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  (function () {
+    const dialog = document.getElementById('cart-drawer');
+    if (!dialog) return;
+
+    const addUrl = dialog.dataset.cartAddUrl;
+    const changeUrl = dialog.dataset.cartChangeUrl;
+    const cartUrl = dialog.dataset.cartUrl;
+
+    function openDrawer() {
+      dialog.showModal();
+    }
+
+    function closeDrawer() {
+      dialog.close();
+    }
+
+    async function refreshDrawer() {
+      const [sectionHtml, cartState] = await Promise.all([
+        fetch(`${cartUrl}?section_id=cart-drawer`).then((r) => r.text()),
+        fetch(`${cartUrl}.js`).then((r) => r.json()),
+      ]);
+
+      const parsed = new DOMParser().parseFromString(sectionHtml, 'text/html');
+      const newInner = parsed.querySelector('.cart-drawer__inner');
+      const currentInner = dialog.querySelector('.cart-drawer__inner');
+      if (newInner && currentInner) {
+        currentInner.innerHTML = newInner.innerHTML;
+      }
+
+      document.querySelectorAll('[data-cart-count]').forEach((el) => {
+        el.textContent = cartState.item_count;
+        el.hidden = cartState.item_count === 0;
+      });
+    }
+
+    async function addToCart(form) {
+      const response = await fetch(addUrl, {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: new FormData(form),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('Add to cart failed:', error.description || error.message);
+        return false;
+      }
+      return true;
+    }
+
+    async function changeLine(lineKey, quantity) {
+      await fetch(changeUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: lineKey, quantity }),
+      });
+    }
+
+    // Intercept every add-to-cart form on the page (upsell tiles here,
+    // and PDP forms once Phase 5 builds them) so adding an item opens
+    // the drawer instead of navigating away.
+    document.addEventListener('submit', async (event) => {
+      const form = event.target;
+      if (!form.action || !form.action.includes('/cart/add')) return;
+      event.preventDefault();
+      const ok = await addToCart(form);
+      await refreshDrawer();
+      if (ok) openDrawer();
+    });
+
+    document.addEventListener('click', async (event) => {
+      if (event.target.closest('[data-cart-drawer-open]')) {
+        openDrawer();
+      }
+
+      if (event.target.closest('[data-cart-drawer-close]')) {
+        closeDrawer();
+      }
+
+      const removeButton = event.target.closest('[data-cart-drawer-remove]');
+      if (removeButton) {
+        const item = removeButton.closest('[data-cart-drawer-item]');
+        await changeLine(item.dataset.lineKey, 0);
+        await refreshDrawer();
+      }
+
+      const stepButton = event.target.closest('[data-quantity-increase], [data-quantity-decrease]');
+      if (stepButton) {
+        const item = stepButton.closest('[data-cart-drawer-item]');
+        const valueEl = item.querySelector('[data-quantity-value]');
+        let quantity = parseInt(valueEl.textContent, 10);
+        quantity += stepButton.hasAttribute('data-quantity-increase') ? 1 : -1;
+        if (quantity < 0) quantity = 0;
+        await changeLine(item.dataset.lineKey, quantity);
+        await refreshDrawer();
+      }
+    });
+
+    // Close when clicking the backdrop (native <dialog> click target is
+    // the dialog itself when the backdrop is clicked).
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) closeDrawer();
+    });
+  })();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "t:general.cart_drawer",
+  "settings": [
+    {
+      "type": "number",
+      "id": "free_shipping_threshold",
+      "label": "t:labels.free_shipping_threshold",
+      "info": "t:info.free_shipping_threshold",
+      "default": 75
+    },
+    {
+      "type": "checkbox",
+      "id": "show_upsell",
+      "label": "t:labels.show_upsell",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "upsell_heading",
+      "label": "t:labels.upsell_heading",
+      "default": "Complete the set"
+    }
+  ]
+}
+{% endschema %}

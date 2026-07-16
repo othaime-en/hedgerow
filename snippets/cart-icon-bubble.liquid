@@ -1,0 +1,13 @@
+{% doc %}
+  Cart icon with a live count badge. The count element carries
+  data-cart-count so cart-drawer.liquid's JS can find and update it
+  after any add/change/remove without a full page reload.
+
+  @example
+  {% render 'cart-icon-bubble' %}
+{% enddoc %}
+
+{{ 'icon-cart.svg' | inline_asset_content }}
+<span class="header__icon-count" data-cart-count {% if cart.item_count == 0 %}hidden{% endif %}>
+  {{ cart.item_count }}
+</span>

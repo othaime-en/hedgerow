@@ -100,6 +100,19 @@
   --grid-gutter: var(--space-3); /* 16px mobile gutter */
 
   /* ---------------------------------------------------------------
+   * Icons (Phase 2) — every icon SVG in assets/ references this.
+   * --------------------------------------------------------------- */
+  --icon-stroke-width: 1.5;
+
+  /* ---------------------------------------------------------------
+   * Z-index scale (Phase 2) — kept short on purpose. Native <dialog>
+   * elements (cart drawer, search) render in the browser's top layer
+   * automatically and don't need a z-index at all.
+   * --------------------------------------------------------------- */
+  --z-sticky: 10;   /* sticky header */
+  --z-dropdown: 20; /* mega-menu panels */
+
+  /* ---------------------------------------------------------------
    * Breakpoints, for reference only (custom properties can't be used
    * inside @media conditions — these values are hardcoded into every
    * media query below and should stay in sync with this list):
@@ -218,6 +231,43 @@ small,
 }
 
 /* =====================================================================
+   Media caption / scrim
+   Image tile with a label overlaid bottom-left on a gradient scrim for
+   legibility. BRAND_BRIEF.md's category-grid direction (Phase 3) calls
+   for this exact treatment, so it lives here as a shared utility rather
+   than being reinvented per-section.
+   ===================================================================== */
+
+.media-caption {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+
+.media-caption::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* rgba values mirror --color-ink (#2E2A26), same approach as
+     --shadow-soft above — CSS can't reference a custom property's RGB
+     components inside rgba() without relative color syntax, which
+     isn't safe yet for the Safari iOS support this theme targets. */
+  background: linear-gradient(to top, rgba(46, 42, 38, 0.55), rgba(46, 42, 38, 0) 55%);
+  pointer-events: none;
+}
+
+.media-caption__label {
+  position: absolute;
+  left: var(--space-3);
+  bottom: var(--space-3);
+  z-index: 1;
+  color: var(--color-white);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+}
+
+/* =====================================================================
    Container
    ===================================================================== */
 
@@ -287,6 +337,52 @@ small,
   .col-span-10-desktop { grid-column: span 10; }
   .col-span-11-desktop { grid-column: span 11; }
   .col-span-12-desktop { grid-column: span 12; }
+}
+
+/* =====================================================================
+   Button
+   The one primary-action style, per BRAND_BRIEF.md's non-negotiable
+   #2: one CTA color and style per screen, used consistently. Every
+   section that needs a button (cart drawer, hero, newsletter, PDP
+   add-to-cart, ...) should use these classes rather than defining its
+   own button styling.
+   ===================================================================== */
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.button--primary {
+  background-color: var(--color-clay);
+  color: var(--color-white);
+  border: 1px solid var(--color-clay);
+}
+.button--primary:hover:not(:disabled) {
+  background-color: var(--color-clay-dark);
+  border-color: var(--color-clay-dark);
+}
+.button--secondary {
+  background-color: transparent;
+  color: var(--color-ink);
+  border: 1px solid var(--color-ink);
+}
+.button--secondary:hover:not(:disabled) {
+  background-color: var(--color-surface);
 }
 
 /* =====================================================================
