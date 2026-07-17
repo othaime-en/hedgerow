@@ -1,0 +1,134 @@
+{% doc %}
+  A single photo-review card in sections/bestsellers-ugc.liquid.
+  Merchant-curated for now (see the section's LiquidDoc note on why) —
+  each block is a real customer photo + quote, optionally linked to the
+  product it features.
+
+  @example
+  {% content_for 'block', type: 'ugc-review', id: 'review-1' %}
+{% enddoc %}
+
+{% liquid
+  assign wrapper = 'div'
+  if block.settings.product != blank
+    assign wrapper = 'a'
+  endif
+%}
+
+<{{ wrapper }}
+  class="ugc-review card"
+  {% if block.settings.product != blank %}
+    href="{{ block.settings.product.url }}"
+  {% endif %}
+  {{ block.shopify_attributes }}
+>
+  <div class="ugc-review__media">
+    {% if block.settings.image != blank %}
+      {{
+        block.settings.image
+        | image_url: width: 700
+        | image_tag: loading: 'lazy', sizes: '(min-width: 1000px) 25vw, 50vw', widths: '350, 500, 700'
+      }}
+    {% else %}
+      <div class="ugc-review__placeholder"></div>
+    {% endif %}
+  </div>
+  <div class="card__body">
+    {% if block.settings.rating > 0 %}
+      <div class="ugc-review__rating" aria-label="{{ 'reviews.rating' | t: rating: block.settings.rating }}">
+        {% for i in (1..5) %}
+          <span class="ugc-review__star{% if i > block.settings.rating %} is-empty{% endif %}">
+            {{ 'icon-star.svg' | inline_asset_content }}
+          </span>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if block.settings.quote != blank %}
+      <p class="ugc-review__quote text-base">&ldquo;{{ block.settings.quote }}&rdquo;</p>
+    {% endif %}
+    {% if block.settings.customer_name != blank %}
+      <p class="ugc-review__name text-sm">{{ block.settings.customer_name }}</p>
+    {% endif %}
+  </div>
+</{{ wrapper }}>
+
+{% stylesheet %}
+  .ugc-review {
+    text-decoration: none;
+    color: var(--color-ink);
+  }
+
+  .ugc-review__media {
+    aspect-ratio: 1 / 1;
+    background-color: var(--color-surface);
+  }
+  .ugc-review__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .ugc-review__placeholder {
+    width: 100%;
+    height: 100%;
+  }
+
+  .ugc-review__rating {
+    display: flex;
+    gap: 2px;
+  }
+  .ugc-review__star svg {
+    width: 0.85rem;
+    height: 0.85rem;
+    color: var(--color-clay);
+  }
+  .ugc-review__star.is-empty svg {
+    color: var(--color-sand);
+  }
+
+  .ugc-review__quote {
+    color: var(--color-ink);
+  }
+  .ugc-review__name {
+    color: var(--color-ink-muted);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.ugc_review",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:labels.image"
+    },
+    {
+      "type": "range",
+      "id": "rating",
+      "label": "t:labels.rating",
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "textarea",
+      "id": "quote",
+      "label": "t:labels.quote",
+      "default": "The pattern is even softer and richer in person than it looked online."
+    },
+    {
+      "type": "text",
+      "id": "customer_name",
+      "label": "t:labels.customer_name",
+      "default": "A happy customer"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:labels.product"
+    }
+  ],
+  "presets": [{ "name": "t:general.ugc_review" }]
+}
+{% endschema %}
