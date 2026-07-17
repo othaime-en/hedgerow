@@ -1,0 +1,129 @@
+<div
+  class="brand-proof-strip brand-proof-strip--{{ section.settings.background }} full-width section-padding"
+  style="{% render 'section-padding', section: section %}"
+>
+  <div class="container">
+    {% if section.blocks.size > 0 %}
+      <div class="brand-proof-strip__grid">
+        {% content_for 'blocks' %}
+      </div>
+    {% elsif request.design_mode %}
+      <div class="brand-proof-strip__empty-state">
+        <p class="text-base">{{ 'brand_proof_strip.empty_state' | t }}</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .brand-proof-strip--bg {
+    background-color: var(--color-bg);
+  }
+  .brand-proof-strip--surface {
+    background-color: var(--color-surface);
+  }
+
+  .brand-proof-strip__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5) var(--space-3);
+  }
+
+  .brand-proof-strip__empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 8rem;
+    color: var(--color-ink-muted);
+  }
+
+  @media (min-width: 750px) {
+    .brand-proof-strip__grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-6);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.brand_proof_strip",
+  "blocks": [{ "type": "proof-stat" }],
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "select",
+      "id": "background",
+      "label": "t:labels.background",
+      "options": [
+        { "value": "bg", "label": "t:options.background_style.bg" },
+        { "value": "surface", "label": "t:options.background_style.surface" }
+      ],
+      "default": "surface"
+    },
+    {
+      "type": "header",
+      "content": "t:general.spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.brand_proof_strip",
+      "blocks": [
+        {
+          "type": "proof-stat",
+          "settings": {
+            "icon": "icon-package.svg",
+            "stat_text": "Printed to order",
+            "description": "Zero overstock, zero waste — made after you order it."
+          }
+        },
+        {
+          "type": "proof-stat",
+          "settings": {
+            "icon": "icon-droplet.svg",
+            "stat_text": "OEKO-TEX certified inks",
+            "description": "Safe for skin, safe for the water they're rinsed into."
+          }
+        },
+        {
+          "type": "proof-stat",
+          "settings": {
+            "icon": "icon-leaf.svg",
+            "stat_text": "Natural fibers",
+            "description": "Cotton and linen blends sourced for softness that lasts."
+          }
+        },
+        {
+          "type": "proof-stat",
+          "settings": {
+            "icon": "icon-shield-check.svg",
+            "stat_text": "Made to order, made to last",
+            "description": "Every piece checked by hand before it ships."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
