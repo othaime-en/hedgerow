@@ -1,0 +1,65 @@
+{% render 'shop-by-rail', section: section %}
+
+{% schema %}
+{
+  "name": "t:general.shop_by_pattern",
+  "blocks": [{ "type": "shop-by-tile" }],
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "Explore"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Shop by pattern"
+    },
+    {
+      "type": "text",
+      "id": "view_all_text",
+      "label": "t:labels.view_all",
+      "default": "View all patterns"
+    },
+    {
+      "type": "collection",
+      "id": "base_collection",
+      "label": "t:labels.base_collection",
+      "info": "t:info.shop_by_base_collection"
+    },
+    {
+      "type": "header",
+      "content": "t:general.spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 96
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.shop_by_pattern",
+      "blocks": [{ "type": "shop-by-tile" }, { "type": "shop-by-tile" }, { "type": "shop-by-tile" }]
+    }
+  ]
+}
+{% endschema %}
