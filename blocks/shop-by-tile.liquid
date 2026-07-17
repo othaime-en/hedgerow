@@ -1,0 +1,118 @@
+{% doc %}
+  A single tile in a "shop by X" rail (see snippets/shop-by-rail.liquid,
+  rendered inside sections/shop-by-pattern.liquid or
+  sections/shop-by-room.liquid).
+
+  `label` should match one of the predefined choices on the
+  custom.pattern_name or custom.room product metafield (see the
+  Implementation Plan's Metafield/Taxonomy Setup section) so the
+  auto-generated filter link resolves correctly. Set a manual `url` to
+  bypass that entirely and link wherever you like.
+
+  Reads `section.type` to know which metafield key to filter by, since
+  the same block type is shared by both parent sections.
+
+  @example
+  {% content_for 'block', type: 'shop-by-tile', id: 'tile-1' %}
+{% enddoc %}
+
+{% liquid
+  assign attribute = 'pattern_name'
+  if section.type == 'shop-by-room'
+    assign attribute = 'room'
+  endif
+
+  assign filter_base_url = routes.all_products_collection_url
+  if section.settings.base_collection != blank
+    assign filter_base_url = section.settings.base_collection.url
+  endif
+
+  assign tile_url = block.settings.url
+  if tile_url == blank and block.settings.label != blank
+    assign filter_value = block.settings.label | url_param_escape
+    assign tile_url = filter_base_url | append: '?filter.p.m.custom.' | append: attribute | append: '=' | append: filter_value
+  endif
+%}
+
+<a href="{{ tile_url | default: '#' }}" class="shop-by__tile" {{ block.shopify_attributes }}>
+  <span class="shop-by__image">
+    {% if block.settings.image != blank %}
+      {{
+        block.settings.image
+        | image_url: width: 500
+        | image_tag: loading: 'lazy', sizes: '160px', widths: '160, 240, 320, 500'
+      }}
+    {% else %}
+      <span class="shop-by__placeholder"></span>
+    {% endif %}
+  </span>
+  {% if block.settings.label != blank %}
+    <span class="shop-by__label text-base">{{ block.settings.label }}</span>
+  {% endif %}
+</a>
+
+{% stylesheet %}
+  .shop-by__tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    flex: 0 0 auto;
+    width: 8.5rem;
+    scroll-snap-align: start;
+    text-decoration: none;
+    color: var(--color-ink);
+  }
+  .shop-by__image {
+    display: block;
+    width: 8.5rem;
+    height: 8.5rem;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background-color: var(--color-surface);
+    transition: opacity var(--duration-fast) var(--ease-standard);
+  }
+  .shop-by__tile:hover .shop-by__image {
+    opacity: 0.85;
+  }
+  .shop-by__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .shop-by__placeholder {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .shop-by__label {
+    font-family: var(--font-display);
+    text-align: center;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.shop_by_tile",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:labels.image"
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "t:labels.label",
+      "info": "t:info.shop_by_tile_label"
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": "t:labels.link",
+      "info": "t:info.shop_by_tile_url"
+    }
+  ],
+  "presets": [{ "name": "t:general.shop_by_tile" }]
+}
+{% endschema %}
