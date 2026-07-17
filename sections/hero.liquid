@@ -1,0 +1,225 @@
+{% liquid
+  assign slide_count = section.blocks.size
+%}
+
+<hero-banner
+  class="hero hero--{{ section.settings.height }} full-width section-padding"
+  style="{% render 'section-padding', section: section %}"
+  data-auto-rotate="{{ section.settings.auto_rotate }}"
+  data-rotate-speed="{{ section.settings.rotate_speed }}"
+>
+  {% if slide_count > 0 %}
+    <div class="hero__stack">
+      {% content_for 'blocks' %}
+    </div>
+
+    {% if slide_count > 1 %}
+      <div class="hero__dots" role="tablist" aria-label="{{ 'hero.slide_navigation' | t }}">
+        {% for block in section.blocks %}
+          <button
+            type="button"
+            class="hero__dot"
+            data-index="{{ forloop.index0 }}"
+            aria-label="{{ 'hero.go_to_slide' | t: number: forloop.index }}"
+          ></button>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% elsif request.design_mode %}
+    <div class="hero__empty-state">
+      <p class="text-base">{{ 'hero.empty_state' | t }}</p>
+    </div>
+  {% endif %}
+</hero-banner>
+
+{% stylesheet %}
+  .hero {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero--compact {
+    min-height: 60vh;
+  }
+  .hero--standard {
+    min-height: 75vh;
+  }
+  .hero--tall {
+    min-height: 92vh;
+  }
+  @media (max-width: 749px) {
+    .hero--compact {
+      min-height: 65vh;
+    }
+    .hero--standard {
+      min-height: 80vh;
+    }
+    .hero--tall {
+      min-height: 92vh;
+    }
+  }
+
+  .hero__stack {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    min-height: inherit;
+  }
+
+  .hero__dots {
+    position: absolute;
+    z-index: 2;
+    bottom: var(--space-4);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: var(--space-2);
+  }
+  .hero__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--color-white);
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-standard);
+  }
+  .hero__dot.is-active {
+    background-color: var(--color-white);
+  }
+
+  .hero__empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: inherit;
+    background-color: var(--color-surface);
+    color: var(--color-ink-muted);
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  class HeroBanner extends HTMLElement {
+    connectedCallback() {
+      this.slides = Array.from(this.querySelectorAll('.hero__slide'));
+      this.dots = Array.from(this.querySelectorAll('.hero__dot'));
+
+      if (this.slides.length <= 1) return;
+
+      this.activeIndex = 0;
+      this.slides[0].classList.add('is-active');
+      if (this.dots[0]) this.dots[0].classList.add('is-active');
+
+      this.dots.forEach((dot) => {
+        dot.addEventListener('click', () => {
+          this.show(parseInt(dot.dataset.index, 10));
+          this.restart();
+        });
+      });
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (this.dataset.autoRotate === 'true' && !reduceMotion) {
+        this.start();
+      }
+    }
+
+    show(index) {
+      this.slides[this.activeIndex].classList.remove('is-active');
+      if (this.dots[this.activeIndex]) this.dots[this.activeIndex].classList.remove('is-active');
+      this.activeIndex = index;
+      this.slides[this.activeIndex].classList.add('is-active');
+      if (this.dots[this.activeIndex]) this.dots[this.activeIndex].classList.add('is-active');
+    }
+
+    start() {
+      const seconds = parseFloat(this.dataset.rotateSpeed) || 6;
+      this.interval = setInterval(() => {
+        this.show((this.activeIndex + 1) % this.slides.length);
+      }, seconds * 1000);
+    }
+
+    restart() {
+      if (this.interval) {
+        clearInterval(this.interval);
+        this.start();
+      }
+    }
+
+    disconnectedCallback() {
+      if (this.interval) clearInterval(this.interval);
+    }
+  }
+
+  customElements.define('hero-banner', HeroBanner);
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "t:general.hero",
+  "blocks": [{ "type": "hero-slide" }],
+  "max_blocks": 2,
+  "settings": [
+    {
+      "type": "select",
+      "id": "height",
+      "label": "t:labels.height",
+      "options": [
+        { "value": "compact", "label": "t:options.height.compact" },
+        { "value": "standard", "label": "t:options.height.standard" },
+        { "value": "tall", "label": "t:options.height.tall" }
+      ],
+      "default": "standard"
+    },
+    {
+      "type": "checkbox",
+      "id": "auto_rotate",
+      "label": "t:labels.auto_rotate",
+      "default": true,
+      "info": "t:info.auto_rotate"
+    },
+    {
+      "type": "range",
+      "id": "rotate_speed",
+      "label": "t:labels.rotate_speed",
+      "min": 6,
+      "max": 15,
+      "step": 1,
+      "unit": "s",
+      "default": 6,
+      "info": "t:info.hero_rotate_speed"
+    },
+    {
+      "type": "header",
+      "content": "t:general.spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0,
+      "info": "t:info.hero_padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.hero",
+      "blocks": [{ "type": "hero-slide" }]
+    }
+  ]
+}
+{% endschema %}
