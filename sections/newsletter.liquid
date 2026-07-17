@@ -1,0 +1,185 @@
+<div
+  class="newsletter newsletter--{{ section.settings.background_style }} full-width section-padding"
+  style="{% render 'section-padding', section: section %}"
+>
+  <div class="container newsletter__inner">
+    <div class="newsletter__copy">
+      {% if section.settings.eyebrow != blank %}
+        <span class="eyebrow newsletter__eyebrow">{{ section.settings.eyebrow }}</span>
+      {% endif %}
+      {% if section.settings.heading != blank %}
+        <h2 class="text-2xl">{{ section.settings.heading }}</h2>
+      {% endif %}
+      {% if section.settings.subtext != blank %}
+        <p class="text-base newsletter__subtext">{{ section.settings.subtext }}</p>
+      {% endif %}
+    </div>
+
+    {% form 'customer', class: 'newsletter__form' %}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      {% if form.posted_successfully? %}
+        <p class="newsletter__message text-base">{{ 'newsletter.success' | t }}</p>
+      {% else %}
+        <div class="newsletter__field">
+          <input
+            type="email"
+            name="contact[email]"
+            class="newsletter__input text-base"
+            placeholder="{{ 'newsletter.placeholder' | t }}"
+            required
+          >
+          <button type="submit" class="button button--primary newsletter__submit">
+            {{ 'newsletter.submit' | t }}
+          </button>
+        </div>
+        {% if form.errors %}
+          <p class="newsletter__error text-sm">{{ form.errors.messages.email }}</p>
+        {% endif %}
+      {% endif %}
+    {% endform %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .newsletter--surface {
+    background-color: var(--color-surface);
+  }
+  .newsletter--ink {
+    background-color: var(--color-ink);
+  }
+  .newsletter--clay {
+    background-color: var(--color-clay);
+  }
+
+  .newsletter--ink .newsletter__copy h2,
+  .newsletter--ink .newsletter__subtext,
+  .newsletter--clay .newsletter__copy h2,
+  .newsletter--clay .newsletter__subtext {
+    color: var(--color-white);
+  }
+  .newsletter--ink .newsletter__eyebrow,
+  .newsletter--clay .newsletter__eyebrow {
+    color: var(--color-white);
+  }
+
+  .newsletter__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-5);
+    text-align: center;
+  }
+
+  .newsletter__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    max-width: 34rem;
+  }
+  .newsletter__subtext {
+    color: var(--color-ink-muted);
+  }
+
+  .newsletter__form {
+    width: 100%;
+    max-width: 26rem;
+  }
+  .newsletter__field {
+    display: flex;
+    gap: var(--space-2);
+  }
+  .newsletter__input {
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-3);
+    border: 1px solid var(--color-sand);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-white);
+    color: var(--color-ink);
+  }
+  .newsletter__submit {
+    width: auto;
+    flex-shrink: 0;
+    padding-inline: var(--space-4);
+  }
+  .newsletter__message {
+    color: var(--color-ink);
+  }
+  .newsletter--ink .newsletter__message,
+  .newsletter--clay .newsletter__message {
+    color: var(--color-white);
+  }
+  .newsletter__error {
+    margin-top: var(--space-2);
+    color: var(--color-clay-dark);
+  }
+
+  @media (max-width: 749px) {
+    .newsletter__field {
+      flex-direction: column;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.newsletter",
+  "settings": [
+    {
+      "type": "select",
+      "id": "background_style",
+      "label": "t:labels.background_style",
+      "options": [
+        { "value": "surface", "label": "t:options.background_style.surface" },
+        { "value": "ink", "label": "t:options.background_style.ink" },
+        { "value": "clay", "label": "t:options.background_style.clay" }
+      ],
+      "default": "surface"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "Stay in the loop"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "New patterns, first look"
+    },
+    {
+      "type": "textarea",
+      "id": "subtext",
+      "label": "t:labels.subtext",
+      "default": "Join the list for new collection launches, restocks, and the occasional good excuse to redecorate."
+    },
+    {
+      "type": "header",
+      "content": "t:general.spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 96
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 96
+    }
+  ],
+  "presets": [{ "name": "t:general.newsletter" }]
+}
+{% endschema %}

@@ -1,0 +1,16 @@
+{% doc %}
+  Outputs the --padding-top / --padding-bottom custom properties consumed
+  by the shared `.section-padding` utility class in assets/base.css.
+
+  Every Phase 3 homepage section defines its own padding_top /
+  padding_bottom range settings (schema can't be shared across files),
+  but they all render through this one snippet + the one CSS rule so the
+  responsive mobile-cap behavior only exists in a single place.
+
+  @param {object} section - the current section, must expose
+    settings.padding_top and settings.padding_bottom
+
+  @example
+  <div class="hero full-width section-padding" style="{% render 'section-padding', section: section %}">
+{% enddoc %}
+--padding-top: {{ section.settings.padding_top | default: 96 }}px; --padding-bottom: {{ section.settings.padding_bottom | default: 96 }}px;

@@ -1,0 +1,77 @@
+{% doc %}
+  A single image tile for sections/category-grid.liquid — category or
+  room, label overlaid bottom-left on the shared .media-caption scrim.
+
+  Per the Implementation Plan's Phase 3 directive this uses "the eyebrow
+  label style from Phase 1" for the overlaid label, which is why it
+  doesn't reuse the larger serif .media-caption__label treatment that
+  blocks/mega-menu-featured.liquid uses for the same scrim pattern —
+  see the category-grid__label rule below.
+
+  @example
+  {% content_for 'block', type: 'category-tile', id: 'tile-1' %}
+{% enddoc %}
+
+<a
+  href="{{ block.settings.url | default: '#' }}"
+  class="category-grid__tile media-caption col-span-12 col-span-6-tablet col-span-4-desktop"
+  {{ block.shopify_attributes }}
+>
+  {% if block.settings.image != blank %}
+    {{
+      block.settings.image
+      | image_url: width: 1000
+      | image_tag:
+        loading: 'lazy',
+        sizes: '(min-width: 1000px) 33vw, (min-width: 750px) 50vw, 100vw',
+        widths: '400, 600, 800, 1000'
+    }}
+  {% else %}
+    <div class="category-grid__placeholder"></div>
+  {% endif %}
+  {% if block.settings.label != blank %}
+    <span class="category-grid__label eyebrow eyebrow--inverse">{{ block.settings.label }}</span>
+  {% endif %}
+</a>
+
+{% stylesheet %}
+  .category-grid__tile {
+    aspect-ratio: 4 / 5;
+  }
+  .category-grid__placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-surface);
+  }
+  .category-grid__label {
+    position: absolute;
+    left: var(--space-3);
+    bottom: var(--space-3);
+    z-index: 1;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.category_tile",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:labels.image"
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "t:labels.label",
+      "default": "Category"
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": "t:labels.link"
+    }
+  ],
+  "presets": [{ "name": "t:general.category_tile" }]
+}
+{% endschema %}

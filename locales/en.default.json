@@ -4,6 +4,9 @@
     "not_found": "Page not found.",
     "back_to_shopping": "Back to shopping"
   },
+  "bestsellers_ugc": {
+    "empty_state": "Add photo-review blocks to feature real customer photos here."
+  },
   "blog": {
     "article_comments": "Comments",
     "article_metadata_html": "{{ date }} by {{ author }}",
@@ -12,6 +15,9 @@
     "comment_form_name": "Name",
     "comment_form_submit": "Post",
     "comment_form_title": "Add a comment"
+  },
+  "brand_proof_strip": {
+    "empty_state": "Add stat blocks to show trust/quality claims here."
   },
   "cart": {
     "checkout": "Checkout",
@@ -36,6 +42,9 @@
       "title": "Login"
     }
   },
+  "category_grid": {
+    "empty_state": "Add category-tile blocks to fill this grid."
+  },
   "collections": {
     "title": "Collections"
   },
@@ -54,6 +63,14 @@
     "expires_on": "Expires on {{ expires_on }}",
     "use_at_checkout": "Use this gift card at checkout"
   },
+  "hero": {
+    "slide_navigation": "Slide navigation",
+    "go_to_slide": "Go to slide {{ number }}",
+    "empty_state": "Add a hero slide block to get started."
+  },
+  "journal_teaser": {
+    "empty_state": "Choose a blog with published posts to fill this grid."
+  },
   "newsletter": {
     "success": "Thanks for signing up.",
     "placeholder": "Email address",
@@ -63,6 +80,12 @@
     "title": "This shop is private",
     "password": "Password",
     "enter": "Enter"
+  },
+  "reviews": {
+    "rating": "Rated {{ rating }} out of 5"
+  },
+  "shop_by": {
+    "empty_state": "Add shop-by-tile blocks to fill this rail."
   },
   "search": {
     "title": "Search",

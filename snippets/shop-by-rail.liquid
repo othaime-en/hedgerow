@@ -1,0 +1,98 @@
+{% doc %}
+  Shared horizontal-scroll "shop by X" merchandising rail wrapper,
+  rendered by both sections/shop-by-pattern.liquid and
+  sections/shop-by-room.liquid so the header/rail markup and styles
+  exist in one place. Tiles themselves are theme blocks (see
+  blocks/shop-by-tile.liquid), rendered the normal way via
+  `content_for 'blocks'` — each tile reads `section.type` to know
+  whether to filter by the pattern_name or room metafield.
+
+  @param {object} section - the current section, exposes
+    settings.base_collection, settings.eyebrow, settings.heading,
+    settings.view_all_text, and blocks
+
+  @example
+  {% render 'shop-by-rail', section: section %}
+{% enddoc %}
+
+{% liquid
+  assign filter_base_url = routes.all_products_collection_url
+  if section.settings.base_collection != blank
+    assign filter_base_url = section.settings.base_collection.url
+  endif
+%}
+
+<div class="shop-by full-width section-padding" style="{% render 'section-padding', section: section %}">
+  <div class="shop-by__inner container">
+    <div class="shop-by__header">
+      {% if section.settings.eyebrow != blank %}
+        <span class="eyebrow">{{ section.settings.eyebrow }}</span>
+      {% endif %}
+      {% if section.settings.heading != blank %}
+        <h2 class="text-2xl">{{ section.settings.heading }}</h2>
+      {% endif %}
+    </div>
+    {% if section.settings.view_all_text != blank %}
+      <a href="{{ filter_base_url }}" class="shop-by__view-all text-sm">{{ section.settings.view_all_text }}</a>
+    {% endif %}
+  </div>
+
+  {% if section.blocks.size > 0 %}
+    <div class="shop-by__rail container">
+      {% content_for 'blocks' %}
+    </div>
+  {% elsif request.design_mode %}
+    <div class="shop-by__empty-state container">
+      <p class="text-base">{{ 'shop_by.empty_state' | t }}</p>
+    </div>
+  {% endif %}
+</div>
+
+{% stylesheet %}
+  .shop-by__inner {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+  .shop-by__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .shop-by__view-all {
+    flex-shrink: 0;
+    color: var(--color-ink-muted);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .shop-by__view-all:hover {
+    color: var(--color-clay);
+  }
+
+  .shop-by__rail {
+    display: flex;
+    gap: var(--space-4);
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: var(--space-2);
+    scrollbar-width: thin;
+  }
+
+  .shop-by__empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 8rem;
+    background-color: var(--color-surface);
+    color: var(--color-ink-muted);
+    border-radius: var(--radius-md);
+  }
+
+  @media (min-width: 1000px) {
+    .shop-by__rail {
+      flex-wrap: wrap;
+    }
+  }
+{% endstylesheet %}

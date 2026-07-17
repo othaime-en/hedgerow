@@ -9,12 +9,221 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "hello-world",
-      "settings": {}
+    "hero": {
+      "type": "hero",
+      "blocks": {
+        "slide-1": {
+          "type": "hero-slide",
+          "settings": {
+            "eyebrow": "New collection",
+            "heading": "A collection worth living in",
+            "subheading": "Soft, livable pattern and color for blankets, bedding, rugs, and everyday objects — made to order, never overstocked.",
+            "content_position": "left",
+            "text_color": "light",
+            "scrim": true,
+            "primary_cta_text": "Shop new arrivals",
+            "primary_cta_link": "{{ routes.all_products_collection_url }}",
+            "secondary_cta_text": "Our story",
+            "secondary_cta_link": ""
+          }
+        }
+      },
+      "block_order": ["slide-1"],
+      "settings": {
+        "height": "standard",
+        "auto_rotate": true,
+        "rotate_speed": 6,
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "category-grid": {
+      "type": "category-grid",
+      "blocks": {
+        "tile-1": {
+          "type": "category-tile",
+          "settings": { "label": "Bedroom" }
+        },
+        "tile-2": {
+          "type": "category-tile",
+          "settings": { "label": "Living room" }
+        },
+        "tile-3": {
+          "type": "category-tile",
+          "settings": { "label": "Entryway" }
+        },
+        "tile-4": {
+          "type": "category-tile",
+          "settings": { "label": "Office" }
+        }
+      },
+      "block_order": ["tile-1", "tile-2", "tile-3", "tile-4"],
+      "settings": {
+        "eyebrow": "Explore",
+        "heading": "Shop by room",
+        "background": "bg",
+        "padding_top": 96,
+        "padding_bottom": 96
+      }
+    },
+    "featured-collection-story": {
+      "type": "featured-collection-story",
+      "settings": {
+        "image_position": "left",
+        "eyebrow": "Featured collection",
+        "heading": "Meadow",
+        "story": "Soft botanical silhouettes in clay, blush, and sage — inspired by the wildflower borders that show up in every good English garden. Printed to order across bedding, throws, and rugs.",
+        "cta_text": "Shop the Meadow collection",
+        "padding_top": 96,
+        "padding_bottom": 96
+      }
+    },
+    "shop-by-pattern": {
+      "type": "shop-by-pattern",
+      "blocks": {
+        "tile-1": {
+          "type": "shop-by-tile",
+          "settings": { "label": "Meadow" }
+        },
+        "tile-2": {
+          "type": "shop-by-tile",
+          "settings": { "label": "Terra" }
+        },
+        "tile-3": {
+          "type": "shop-by-tile",
+          "settings": { "label": "Marsh" }
+        },
+        "tile-4": {
+          "type": "shop-by-tile",
+          "settings": { "label": "Orchard" }
+        }
+      },
+      "block_order": ["tile-1", "tile-2", "tile-3", "tile-4"],
+      "settings": {
+        "eyebrow": "Explore",
+        "heading": "Shop by pattern",
+        "view_all_text": "View all patterns",
+        "padding_top": 96,
+        "padding_bottom": 96
+      }
+    },
+    "brand-proof-strip": {
+      "type": "brand-proof-strip",
+      "blocks": {
+        "stat-1": {
+          "type": "proof-stat",
+          "settings": {
+            "icon": "icon-package.svg",
+            "stat_text": "Printed to order",
+            "description": "Zero overstock, zero waste — made after you order it."
+          }
+        },
+        "stat-2": {
+          "type": "proof-stat",
+          "settings": {
+            "icon": "icon-droplet.svg",
+            "stat_text": "OEKO-TEX certified inks",
+            "description": "Safe for skin, safe for the water they're rinsed into."
+          }
+        },
+        "stat-3": {
+          "type": "proof-stat",
+          "settings": {
+            "icon": "icon-leaf.svg",
+            "stat_text": "Natural fibers",
+            "description": "Cotton and linen blends sourced for softness that lasts."
+          }
+        },
+        "stat-4": {
+          "type": "proof-stat",
+          "settings": {
+            "icon": "icon-shield-check.svg",
+            "stat_text": "Made to order, made to last",
+            "description": "Every piece checked by hand before it ships."
+          }
+        }
+      },
+      "block_order": ["stat-1", "stat-2", "stat-3", "stat-4"],
+      "settings": {
+        "background": "surface",
+        "padding_top": 64,
+        "padding_bottom": 64
+      }
+    },
+    "bestsellers-ugc": {
+      "type": "bestsellers-ugc",
+      "blocks": {
+        "review-1": {
+          "type": "ugc-review",
+          "settings": {
+            "rating": 5,
+            "quote": "The pattern is even softer and richer in person than it looked online.",
+            "customer_name": "A happy customer"
+          }
+        },
+        "review-2": {
+          "type": "ugc-review",
+          "settings": {
+            "rating": 5,
+            "quote": "Made our bedroom feel finished for the first time.",
+            "customer_name": "A happy customer"
+          }
+        },
+        "review-3": {
+          "type": "ugc-review",
+          "settings": {
+            "rating": 5,
+            "quote": "Exactly the clay tone I hoped for — no surprises.",
+            "customer_name": "A happy customer"
+          }
+        },
+        "review-4": {
+          "type": "ugc-review",
+          "settings": {
+            "rating": 5,
+            "quote": "Worth the wait for made-to-order. Beautifully packaged too.",
+            "customer_name": "A happy customer"
+          }
+        }
+      },
+      "block_order": ["review-1", "review-2", "review-3", "review-4"],
+      "settings": {
+        "eyebrow": "As seen at home",
+        "heading": "Loved in real rooms",
+        "padding_top": 96,
+        "padding_bottom": 96
+      }
+    },
+    "journal-teaser": {
+      "type": "journal-teaser",
+      "settings": {
+        "eyebrow": "The journal",
+        "heading": "Notes on living well",
+        "view_all_text": "Read the journal",
+        "padding_top": 96,
+        "padding_bottom": 96
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "background_style": "surface",
+        "eyebrow": "Stay in the loop",
+        "heading": "New patterns, first look",
+        "subtext": "Join the list for new collection launches, restocks, and the occasional good excuse to redecorate.",
+        "padding_top": 96,
+        "padding_bottom": 96
+      }
     }
   },
   "order": [
-    "main"
+    "hero",
+    "category-grid",
+    "featured-collection-story",
+    "shop-by-pattern",
+    "brand-proof-strip",
+    "bestsellers-ugc",
+    "journal-teaser",
+    "newsletter"
   ]
 }

@@ -1,0 +1,85 @@
+{% doc %}
+  A single column in sections/brand-proof-strip.liquid: icon + a
+  specific stat/claim + one line of supporting copy. Per BRAND_BRIEF.md
+  §7 non-negotiable #4, defaults use specific claims ("Printed to
+  order — zero overstock"), never generic trust-badge language.
+
+  @example
+  {% content_for 'block', type: 'proof-stat', id: 'stat-1' %}
+{% enddoc %}
+
+<div class="proof-stat" {{ block.shopify_attributes }}>
+  {% if block.settings.icon != 'none' %}
+    <span class="proof-stat__icon">
+      {{ block.settings.icon | inline_asset_content }}
+    </span>
+  {% endif %}
+  {% if block.settings.stat_text != blank %}
+    <p class="proof-stat__stat text-lg">{{ block.settings.stat_text }}</p>
+  {% endif %}
+  {% if block.settings.description != blank %}
+    <p class="proof-stat__description text-sm">{{ block.settings.description }}</p>
+  {% endif %}
+</div>
+
+{% stylesheet %}
+  .proof-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    text-align: center;
+    padding: var(--space-2);
+  }
+  .proof-stat__icon {
+    display: flex;
+    margin-bottom: var(--space-1);
+  }
+  .proof-stat__icon svg {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--color-clay);
+  }
+  .proof-stat__stat {
+    font-family: var(--font-display);
+  }
+  .proof-stat__description {
+    color: var(--color-ink-muted);
+    max-width: 24ch;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.proof_stat",
+  "settings": [
+    {
+      "type": "select",
+      "id": "icon",
+      "label": "t:labels.icon",
+      "options": [
+        { "value": "none", "label": "t:options.icon.none" },
+        { "value": "icon-package.svg", "label": "t:options.icon.package" },
+        { "value": "icon-leaf.svg", "label": "t:options.icon.leaf" },
+        { "value": "icon-shield-check.svg", "label": "t:options.icon.shield_check" },
+        { "value": "icon-droplet.svg", "label": "t:options.icon.droplet" },
+        { "value": "icon-heart.svg", "label": "t:options.icon.heart" }
+      ],
+      "default": "icon-package.svg"
+    },
+    {
+      "type": "text",
+      "id": "stat_text",
+      "label": "t:labels.stat_text",
+      "default": "Printed to order"
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "t:labels.description",
+      "default": "Zero overstock, zero waste — every piece is made after you order it."
+    }
+  ],
+  "presets": [{ "name": "t:general.proof_stat" }]
+}
+{% endschema %}

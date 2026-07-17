@@ -1,0 +1,285 @@
+{% doc %}
+  A single hero slide: full-bleed image or video background with an
+  overlaid eyebrow/heading/subhead and up to two CTAs (one primary
+  button, one secondary muted text-link). sections/hero.liquid caps
+  this block at 2 per the Implementation Plan's Phase 3 hero directive
+  ("no carousel by default... if multiple slides are needed, cap at 2").
+
+  @example
+  {% content_for 'block', type: 'hero-slide', id: 'slide-1' %}
+{% enddoc %}
+
+<div
+  class="hero__slide hero__slide--{{ block.settings.text_color }}"
+  data-content-position="{{ block.settings.content_position }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="hero__media">
+    {% if block.settings.video != blank %}
+      {{
+        block.settings.video
+        | video_tag:
+          autoplay: true,
+          loop: true,
+          muted: true,
+          playsinline: true,
+          controls: false,
+          image_size: '1920x',
+          poster: block.settings.image
+      }}
+    {% elsif block.settings.image != blank %}
+      <picture>
+        {% if block.settings.mobile_image != blank %}
+          <source media="(max-width: 749px)" srcset="{{ block.settings.mobile_image | image_url: width: 900 }}">
+        {% endif %}
+        {{
+          block.settings.image
+          | image_url: width: 2000
+          | image_tag: loading: 'lazy', sizes: '100vw', widths: '750, 1100, 1500, 2000'
+        }}
+      </picture>
+    {% else %}
+      <div class="hero__media-placeholder"></div>
+    {% endif %}
+    {% if block.settings.scrim %}
+      <div class="hero__scrim"></div>
+    {% endif %}
+  </div>
+
+  <div class="hero__content">
+    {% if block.settings.eyebrow != blank %}
+      <span class="eyebrow eyebrow--inverse hero__eyebrow">{{ block.settings.eyebrow }}</span>
+    {% endif %}
+    {% if block.settings.heading != blank %}
+      <h1 class="hero__heading text-3xl">{{ block.settings.heading }}</h1>
+    {% endif %}
+    {% if block.settings.subheading != blank %}
+      <p class="hero__subheading text-lg">{{ block.settings.subheading }}</p>
+    {% endif %}
+    {% if block.settings.primary_cta_text != blank %}
+      <div class="hero__actions">
+        <a href="{{ block.settings.primary_cta_link | default: '#' }}" class="button button--primary hero__cta">
+          {{ block.settings.primary_cta_text }}
+        </a>
+        {% if block.settings.secondary_cta_text != blank %}
+          <a href="{{ block.settings.secondary_cta_link | default: '#' }}" class="hero__cta-secondary text-base">
+            {{ block.settings.secondary_cta_text }}
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .hero__slide {
+    grid-area: 1 / 1;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-base) var(--ease-standard);
+  }
+  /* With one slide (the common case) this is the only slide in the
+     stack, so it's just visible — no JS required, same pattern as
+     sections/announcement-bar.liquid. */
+  .hero__slide:only-child,
+  .hero__slide.is-active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .hero__media {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  .hero__media picture,
+  .hero__media img,
+  .hero__media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .hero__media-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-surface);
+  }
+  .hero__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(46, 42, 38, 0.6), rgba(46, 42, 38, 0) 60%);
+    pointer-events: none;
+  }
+
+  .hero__content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    max-width: 34rem;
+    padding: var(--space-5) var(--page-margin) var(--space-6);
+  }
+  .hero__slide[data-content-position="center"] .hero__content {
+    align-items: center;
+    text-align: center;
+    margin-inline: auto;
+  }
+
+  .hero__slide--light .hero__heading,
+  .hero__slide--light .hero__subheading {
+    color: var(--color-white);
+  }
+  .hero__slide--light .hero__cta-secondary {
+    color: var(--color-white);
+    border-color: var(--color-white);
+  }
+  .hero__slide--dark .hero__heading,
+  .hero__slide--dark .hero__subheading {
+    color: var(--color-ink);
+  }
+  .hero__slide--dark .eyebrow--inverse {
+    color: var(--color-ink);
+  }
+  .hero__slide--dark .hero__cta-secondary {
+    color: var(--color-ink);
+    border-color: var(--color-ink);
+  }
+
+  .hero__subheading {
+    max-width: 30ch;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+    margin-top: var(--space-2);
+  }
+  .hero__cta {
+    width: auto;
+    padding-inline: var(--space-5);
+  }
+  .hero__cta-secondary {
+    padding-bottom: var(--space-1);
+    border-bottom: 1px solid currentColor;
+    text-decoration: none;
+    font-size: var(--text-base);
+  }
+
+  @media (min-width: 750px) {
+    .hero__content {
+      padding: var(--space-7) var(--page-margin) var(--space-8);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.hero_slide",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:labels.image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "t:labels.mobile_image",
+      "info": "t:info.mobile_image"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "t:labels.video",
+      "info": "t:info.hero_video"
+    },
+    {
+      "type": "header",
+      "content": "t:general.content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "A collection worth living in"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "t:labels.subtext"
+    },
+    {
+      "type": "select",
+      "id": "content_position",
+      "label": "t:labels.content_position",
+      "options": [
+        { "value": "left", "label": "t:options.alignment.left" },
+        { "value": "center", "label": "t:options.alignment.center" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "text_color",
+      "label": "t:labels.text_color",
+      "options": [
+        { "value": "light", "label": "t:options.text_color.light" },
+        { "value": "dark", "label": "t:options.text_color.dark" }
+      ],
+      "default": "light",
+      "info": "t:info.hero_text_color"
+    },
+    {
+      "type": "checkbox",
+      "id": "scrim",
+      "label": "t:labels.scrim",
+      "default": true,
+      "info": "t:info.hero_scrim"
+    },
+    {
+      "type": "header",
+      "content": "t:general.primary"
+    },
+    {
+      "type": "text",
+      "id": "primary_cta_text",
+      "label": "t:labels.cta_text",
+      "default": "Shop now"
+    },
+    {
+      "type": "url",
+      "id": "primary_cta_link",
+      "label": "t:labels.cta_link"
+    },
+    {
+      "type": "header",
+      "content": "t:general.secondary"
+    },
+    {
+      "type": "text",
+      "id": "secondary_cta_text",
+      "label": "t:labels.cta_text"
+    },
+    {
+      "type": "url",
+      "id": "secondary_cta_link",
+      "label": "t:labels.cta_link"
+    }
+  ],
+  "presets": [{ "name": "t:general.hero_slide" }]
+}
+{% endschema %}

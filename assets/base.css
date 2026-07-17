@@ -393,3 +393,73 @@ small,
   transition-duration: var(--duration-base);
   transition-timing-function: var(--ease-standard);
 }
+
+/* =====================================================================
+   Configurable section padding (Phase 3)
+
+   Every homepage module exposes a `padding_top` / `padding_bottom`
+   range setting (see the Implementation Plan's Phase 3 general
+   directive) so merchants can control rhythm without code changes.
+   Each section renders `{% render 'section-padding', section: section %}`
+   into its root `style` attribute, which sets --padding-top /
+   --padding-bottom; this class turns those into the actual rule.
+
+   On mobile, values are capped at --section-padding-mobile (56px) via
+   min() — a merchant can still choose LESS padding than the default,
+   but a large desktop value never bleeds into cramped mobile viewports
+   uncapped. This is the one shared rhythm rule for the whole site
+   (BRAND_BRIEF.md §7, non-negotiable #1), so it lives here once rather
+   than being reimplemented per section.
+   ===================================================================== */
+
+.section-padding {
+  padding-top: var(--padding-top, var(--section-padding-desktop));
+  padding-bottom: var(--padding-bottom, var(--section-padding-desktop));
+}
+
+@media (max-width: 749px) {
+  .section-padding {
+    padding-top: min(var(--padding-top, var(--section-padding-mobile)), var(--section-padding-mobile));
+    padding-bottom: min(var(--padding-bottom, var(--section-padding-mobile)), var(--section-padding-mobile));
+  }
+}
+
+/* =====================================================================
+   Eyebrow — inverse modifier (Phase 3)
+
+   The base .eyebrow color (--color-ink-muted) doesn't pass contrast
+   over photography. category-grid, hero, and the shop-by rails all
+   need the same uppercase/letter-spaced/small treatment layered on
+   top of an image with a scrim, so the color-safe variant lives here
+   once instead of being redefined in three separate section
+   stylesheets. See docs/BRAND_BRIEF.md §2 contrast rule.
+   ===================================================================== */
+
+.eyebrow--inverse {
+  color: var(--color-white);
+}
+
+/* =====================================================================
+   Card (Phase 3)
+
+   Shared surface for content tiles that aren't full-bleed photography
+   — journal teaser cards, UGC review cards. Warm-tinted shadow per
+   BRAND_BRIEF.md §5, rounded at --radius-md like other product/content
+   cards.
+   ===================================================================== */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-white);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
