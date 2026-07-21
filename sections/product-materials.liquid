@@ -1,0 +1,168 @@
+{% doc %}
+  Materials & quality block (Implementation Plan Phase 5, directive #2):
+  weight, composition, care instructions, and the made-to-order note,
+  each pulled from a structured product metafield rather than the
+  free-text description. Rows are hidden individually when their
+  metafield is blank, and the whole section is hidden if none are set.
+
+  Needs these Product metafield definitions (see the chat summary for
+  the Admin walkthrough):
+    custom.material_weight       — single line text, e.g. "450 GSM"
+    custom.material_composition  — single line text
+    custom.care_instructions     — multi-line text
+    custom.made_to_order_note    — multi-line text (already created in
+                                    Phase 3's metafield setup)
+{% enddoc %}
+{% liquid
+  assign weight = product.metafields.custom.material_weight.value
+  assign composition = product.metafields.custom.material_composition.value
+  assign care = product.metafields.custom.care_instructions.value
+  assign made_to_order = product.metafields.custom.made_to_order_note.value
+%}
+
+{% if weight != blank or composition != blank or care != blank or made_to_order != blank %}
+  <div class="product-materials section-padding" style="{% render 'section-padding', section: section %}">
+    <div class="container product-materials__inner">
+      {% if section.settings.heading != blank %}
+        <h2 class="text-xl">{{ section.settings.heading }}</h2>
+      {% endif %}
+
+      <div class="product-materials__rows">
+        {% if composition != blank %}
+          <details class="product-materials__row" open>
+            <summary class="text-base">
+              <span class="product-materials__row-label">
+                {{ 'icon-leaf.svg' | inline_asset_content }}
+                {{ 'product.materials_composition' | t }}
+              </span>
+              {{ 'icon-chevron-down.svg' | inline_asset_content }}
+            </summary>
+            <div class="product-materials__row-body text-sm">
+              <p>{{ composition }}</p>
+              {% if weight != blank %}
+                <p>{{ 'product.materials_weight' | t }}: {{ weight }}</p>
+              {% endif %}
+            </div>
+          </details>
+        {% endif %}
+
+        {% if care != blank %}
+          <details class="product-materials__row">
+            <summary class="text-base">
+              <span class="product-materials__row-label">
+                {{ 'icon-droplet.svg' | inline_asset_content }}
+                {{ 'product.materials_care' | t }}
+              </span>
+              {{ 'icon-chevron-down.svg' | inline_asset_content }}
+            </summary>
+            <div class="product-materials__row-body text-sm">{{ care }}</div>
+          </details>
+        {% endif %}
+
+        {% if made_to_order != blank %}
+          <details class="product-materials__row">
+            <summary class="text-base">
+              <span class="product-materials__row-label">
+                {{ 'icon-package.svg' | inline_asset_content }}
+                {{ 'product.materials_made_to_order' | t }}
+              </span>
+              {{ 'icon-chevron-down.svg' | inline_asset_content }}
+            </summary>
+            <div class="product-materials__row-body text-sm">{{ made_to_order }}</div>
+          </details>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  .product-materials__inner {
+    max-width: 42rem;
+  }
+  .product-materials__inner h2 {
+    margin-bottom: var(--space-4);
+  }
+
+  .product-materials__row {
+    border-bottom: 1px solid var(--color-sand);
+    padding-block: var(--space-3);
+  }
+  .product-materials__row summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    list-style: none;
+    color: var(--color-ink);
+  }
+  .product-materials__row summary::-webkit-details-marker {
+    display: none;
+  }
+  .product-materials__row summary > svg:last-child {
+    width: 0.75rem;
+    height: 0.75rem;
+    flex-shrink: 0;
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  .product-materials__row[open] summary > svg:last-child {
+    transform: rotate(180deg);
+  }
+  .product-materials__row-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .product-materials__row-label svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    color: var(--color-clay);
+    flex-shrink: 0;
+  }
+  .product-materials__row-body {
+    padding-top: var(--space-3);
+    padding-left: calc(1.1rem + var(--space-3));
+    color: var(--color-ink-muted);
+  }
+  .product-materials__row-body p + p {
+    margin-top: var(--space-2);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.product_materials",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Materials & care"
+    },
+    {
+      "type": "header",
+      "content": "t:general.spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ]
+}
+{% endschema %}
