@@ -1,0 +1,105 @@
+{% doc %}
+  Single review card: photo (or placeholder), star rating, quote, and
+  customer name. Shared by blocks/ugc-review.liquid (Phase 3's
+  merchant-curated homepage showcase) and sections/product-reviews.liquid
+  (Phase 5's per-product metaobject-backed reviews), so both surfaces
+  render a review identically.
+
+  @param {image} [image] - review photo
+  @param {number} [rating] - 0-5
+  @param {string} [quote]
+  @param {string} [customer_name]
+  @param {product} [product] - if present, the whole card links to it
+  @param {string} [block_attributes] - pass block.shopify_attributes
+    through when rendered from a block, so Theme Editor selection
+    highlights this exact element rather than a wrapper
+
+  @example
+  {% render 'review-card', image: block.settings.image, rating: block.settings.rating, quote: block.settings.quote, customer_name: block.settings.customer_name, product: block.settings.product, block_attributes: block.shopify_attributes %}
+{% enddoc %}
+
+{% liquid
+  assign wrapper = 'div'
+  if product != blank
+    assign wrapper = 'a'
+  endif
+%}
+
+<{{ wrapper }}
+  class="review-card card"
+  {% if product != blank %}
+    href="{{ product.url }}"
+  {% endif %}
+  {{ block_attributes }}
+>
+  <div class="review-card__media">
+    {% if image != blank %}
+      {{
+        image
+        | image_url: width: 700
+        | image_tag: loading: 'lazy', sizes: '(min-width: 1000px) 25vw, 50vw', widths: '350, 500, 700'
+      }}
+    {% else %}
+      <div class="review-card__placeholder"></div>
+    {% endif %}
+  </div>
+  <div class="card__body">
+    {% if rating > 0 %}
+      <div class="review-card__rating" aria-label="{{ 'reviews.rating' | t: rating: rating }}">
+        {% for i in (1..5) %}
+          <span class="review-card__star{% if i > rating %} is-empty{% endif %}">
+            {{ 'icon-star.svg' | inline_asset_content }}
+          </span>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if quote != blank %}
+      <p class="review-card__quote text-base">&ldquo;{{ quote }}&rdquo;</p>
+    {% endif %}
+    {% if customer_name != blank %}
+      <p class="review-card__name text-sm">{{ customer_name }}</p>
+    {% endif %}
+  </div>
+</{{ wrapper }}>
+
+{% stylesheet %}
+  .review-card {
+    display: block;
+    text-decoration: none;
+    color: var(--color-ink);
+  }
+
+  .review-card__media {
+    aspect-ratio: 1 / 1;
+    background-color: var(--color-surface);
+  }
+  .review-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .review-card__placeholder {
+    width: 100%;
+    height: 100%;
+  }
+
+  .review-card__rating {
+    display: flex;
+    gap: 2px;
+  }
+  .review-card__star svg {
+    width: 0.85rem;
+    height: 0.85rem;
+    color: var(--color-clay);
+  }
+  .review-card__star.is-empty svg {
+    color: var(--color-sand);
+  }
+
+  .review-card__quote {
+    color: var(--color-ink);
+  }
+  .review-card__name {
+    color: var(--color-ink-muted);
+  }
+{% endstylesheet %}
