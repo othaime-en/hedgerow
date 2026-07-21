@@ -1,0 +1,238 @@
+{% doc %}
+  Shared filter-group markup rendered inside both the desktop filter
+  sidebar and the mobile filter drawer in sections/collection.liquid.
+  Loops `collection.filters` generically across all three native
+  filter types (list / boolean / price_range) rather than hardcoding
+  filter names, so any filter a merchant enables in Shopify Admin >
+  Search & Discovery — including the custom.pattern_name,
+  custom.color_family, and custom.room product metafield filters from
+  the Implementation Plan's metafield setup — appears automatically.
+
+  Every input carries a `form` attribute pointing at the shared
+  <form id="CollectionFilterForm-..."> in sections/collection.liquid,
+  so the mobile copy (physically outside that form, inside a <dialog>)
+  still submits into the same form as the desktop copy.
+
+  @param {object} collection - the current collection, exposes .filters
+  @param {string} id_prefix - unique prefix so input ids don't collide
+    between the desktop and mobile copies of this markup
+  @param {string} form_id - id of the <form> every input should submit
+    into via the HTML `form` attribute
+
+  @example
+  {% render 'collection-filters-panel', collection: collection, id_prefix: 'Desktop-', form_id: 'CollectionFilterForm-123' %}
+{% enddoc %}
+
+{% for filter in collection.filters %}
+  <details class="filter-group" {% if forloop.index == 1 %}open{% endif %}>
+    <summary class="filter-group__summary text-base">
+      <span>{{ filter.label }}</span>
+      {{ 'icon-chevron-down.svg' | inline_asset_content }}
+    </summary>
+
+    <div class="filter-group__body">
+      {% case filter.type %}
+        {% when 'list' %}
+          <ul class="filter-list" role="list">
+            {% for value in filter.values %}
+              {% liquid
+                assign input_id = id_prefix | append: filter.param_name | append: '-' | append: forloop.index
+                assign is_disabled = false
+                if value.count == 0 and value.active == false
+                  assign is_disabled = true
+                endif
+              %}
+              <li class="filter-list__item">
+                <label
+                  class="filter-list__label{% if is_disabled %} filter-list__label--disabled{% endif %}"
+                  for="{{ input_id }}"
+                >
+                  <input
+                    type="checkbox"
+                    id="{{ input_id }}"
+                    name="{{ value.param_name }}"
+                    value="{{ value.value }}"
+                    form="{{ form_id }}"
+                    {% if value.active %}
+                      checked
+                    {% endif %}
+                    {% if is_disabled %}
+                      disabled
+                    {% endif %}
+                  >
+                  {% if value.swatch.color %}
+                    <span class="filter-list__swatch" style="--swatch-color: rgb({{ value.swatch.color.rgb }})"></span>
+                  {% elsif value.swatch.image %}
+                    <span
+                      class="filter-list__swatch"
+                      style="--swatch-image: url({{ value.swatch.image | image_url: width: 40 }})"
+                    ></span>
+                  {% endif %}
+                  <span class="filter-list__text text-sm">{{ value.label }}</span>
+                  <span class="filter-list__count text-xs">({{ value.count }})</span>
+                </label>
+              </li>
+            {% endfor %}
+          </ul>
+
+        {% when 'boolean' %}
+          <ul class="filter-list" role="list">
+            {% for value in filter.values %}
+              {% assign input_id = id_prefix | append: filter.param_name | append: '-' | append: forloop.index %}
+              <li class="filter-list__item">
+                <label class="filter-list__label" for="{{ input_id }}">
+                  <input
+                    type="checkbox"
+                    id="{{ input_id }}"
+                    name="{{ value.param_name }}"
+                    value="{{ value.value }}"
+                    form="{{ form_id }}"
+                    {% if value.active %}
+                      checked
+                    {% endif %}
+                  >
+                  <span class="filter-list__text text-sm">{{ value.label }}</span>
+                  <span class="filter-list__count text-xs">({{ value.count }})</span>
+                </label>
+              </li>
+            {% endfor %}
+          </ul>
+
+        {% when 'price_range' %}
+          <div class="filter-price">
+            <div class="filter-price__field">
+              <span class="text-sm">{{ cart.currency.symbol }}</span>
+              <input
+                type="number"
+                inputmode="decimal"
+                min="0"
+                name="{{ filter.min_value.param_name }}"
+                id="{{ id_prefix }}{{ filter.param_name }}-min"
+                form="{{ form_id }}"
+                placeholder="0"
+                {% if filter.min_value.value %}
+                  value="{{ filter.min_value.value | money_without_currency }}"
+                {% endif %}
+              >
+              <label for="{{ id_prefix }}{{ filter.param_name }}-min" class="text-xs">
+                {{ 'collection.price_from' | t }}
+              </label>
+            </div>
+            <div class="filter-price__field">
+              <span class="text-sm">{{ cart.currency.symbol }}</span>
+              <input
+                type="number"
+                inputmode="decimal"
+                min="0"
+                name="{{ filter.max_value.param_name }}"
+                id="{{ id_prefix }}{{ filter.param_name }}-max"
+                form="{{ form_id }}"
+                placeholder="{{ filter.range_max | money_without_currency }}"
+                {% if filter.max_value.value %}
+                  value="{{ filter.max_value.value | money_without_currency }}"
+                {% endif %}
+              >
+              <label for="{{ id_prefix }}{{ filter.param_name }}-max" class="text-xs">
+                {{ 'collection.price_to' | t }}
+              </label>
+            </div>
+          </div>
+      {% endcase %}
+    </div>
+  </details>
+{% else %}
+  <p class="filter-empty text-sm">{{ 'collection.no_filters' | t }}</p>
+{% endfor %}
+
+{% stylesheet %}
+  .filter-group {
+    border-bottom: 1px solid var(--color-sand);
+    padding-block: var(--space-3);
+  }
+  .filter-group__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    list-style: none;
+    color: var(--color-ink);
+  }
+  .filter-group__summary::-webkit-details-marker {
+    display: none;
+  }
+  .filter-group__summary svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    flex-shrink: 0;
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  .filter-group[open] .filter-group__summary svg {
+    transform: rotate(180deg);
+  }
+  .filter-group__body {
+    padding-top: var(--space-3);
+  }
+
+  .filter-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .filter-list__label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    cursor: pointer;
+    color: var(--color-ink);
+  }
+  .filter-list__label--disabled {
+    color: var(--color-ink-muted);
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .filter-list__label input[type='checkbox'] {
+    accent-color: var(--color-clay);
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+  .filter-list__swatch {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background-color: var(--swatch-color, var(--color-sand));
+    background-image: var(--swatch-image, none);
+    background-size: cover;
+    border: 1px solid var(--color-sand);
+    flex-shrink: 0;
+  }
+  .filter-list__count {
+    color: var(--color-ink-muted);
+  }
+
+  .filter-price {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-3);
+  }
+  .filter-price__field {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    flex: 1;
+  }
+  .filter-price__field input {
+    width: 100%;
+    min-width: 0;
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-sand);
+    background-color: var(--color-bg);
+  }
+
+  .filter-empty {
+    color: var(--color-ink-muted);
+  }
+{% endstylesheet %}
