@@ -1,0 +1,235 @@
+{% doc %}
+  Product media gallery for sections/product.liquid: a mix of studio
+  and lifestyle/texture images in one gallery (BRAND_BRIEF.md §6 calls
+  for both per product). Desktop shows a large viewer with a thumbnail
+  rail beside it; mobile switches to a native horizontally-swipeable
+  strip. The desktop viewer swap is done with a hidden radio group and
+  CSS (`:checked` + a small per-instance `<style>` block, since the
+  slide count is dynamic and section-level `{% stylesheet %}` can't
+  render Liquid) — no JS required for the core interaction, matching
+  the mega-menu's `<details>/<summary>` progressive-enhancement
+  approach. A little JS layers on arrow-key navigation for
+  accessibility.
+
+  @param {product} product
+  @param {string} unique_id - unique per section instance, used to
+    namespace the radio group's name/ids
+
+  @example
+  {% render 'product-media-gallery', product: product, unique_id: section.id %}
+{% enddoc %}
+
+{% liquid
+  assign gallery_media = product.media | where: 'media_type', 'image'
+  if gallery_media == blank and product.featured_image != blank
+    assign gallery_media = product.images
+  endif
+%}
+
+<product-gallery class="product-gallery">
+  {% if gallery_media == blank %}
+    <div class="product-gallery__placeholder"></div>
+  {% else %}
+    {% for media in gallery_media %}
+      <input
+        type="radio"
+        name="GalleryImage-{{ unique_id }}"
+        id="GalleryImage-{{ unique_id }}-{{ forloop.index }}"
+        class="product-gallery__radio"
+        {% if forloop.first %}
+          checked
+        {% endif %}
+      >
+    {% endfor %}
+
+    <style>
+      {% for media in gallery_media %}
+        #GalleryImage-{{ unique_id }}-{{ forloop.index }}:checked
+          ~ .product-gallery__track
+          .product-gallery__slide:nth-child({{ forloop.index }}) {
+          opacity: 1;
+          z-index: 1;
+        }
+        #GalleryImage-{{ unique_id }}-{{ forloop.index }}:checked
+          ~ .product-gallery__thumbs
+          .product-gallery__thumb:nth-child({{ forloop.index }}) {
+          opacity: 1;
+          border-color: var(--color-clay);
+        }
+      {% endfor %}
+    </style>
+
+    <div class="product-gallery__viewer">
+      <div class="product-gallery__track">
+        {% for media in gallery_media %}
+          {% liquid
+            assign loading_strategy = 'lazy'
+            assign fetch_priority = 'auto'
+            if forloop.first
+              assign loading_strategy = 'eager'
+              assign fetch_priority = 'high'
+            endif
+          %}
+          <div class="product-gallery__slide">
+            {{
+              media
+              | image_url: width: 1400
+              | image_tag:
+                loading: loading_strategy,
+                fetchpriority: fetch_priority,
+                sizes: '(min-width: 1000px) 50vw, 100vw',
+                widths: '600, 900, 1200, 1400'
+            }}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if gallery_media.size > 1 %}
+      <div class="product-gallery__thumbs" role="group" aria-label="{{ 'product.gallery_thumbnails' | t }}">
+        {% for media in gallery_media %}
+          <label
+            for="GalleryImage-{{ unique_id }}-{{ forloop.index }}"
+            class="product-gallery__thumb"
+            aria-label="{{ 'product.view_image' | t: index: forloop.index, count: gallery_media.size }}"
+          >
+            {{
+              media
+              | image_url: width: 200
+              | image_tag: loading: 'lazy', sizes: '4rem', widths: '100, 150, 200'
+            }}
+          </label>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+</product-gallery>
+
+{% stylesheet %}
+  .product-gallery {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .product-gallery__radio {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .product-gallery__placeholder {
+    aspect-ratio: 4 / 5;
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+  }
+
+  .product-gallery__viewer {
+    order: 1;
+  }
+  .product-gallery__track {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background-color: var(--color-surface);
+  }
+  .product-gallery__slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity var(--duration-base) var(--ease-standard);
+  }
+  .product-gallery__slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .product-gallery__thumbs {
+    order: 2;
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+  }
+  .product-gallery__thumb {
+    display: block;
+    flex: 0 0 4rem;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    cursor: pointer;
+    opacity: 0.6;
+    border: 1px solid transparent;
+    transition: opacity var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard);
+  }
+  .product-gallery__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .product-gallery__thumb:hover {
+    opacity: 1;
+  }
+
+  @media (min-width: 750px) {
+    .product-gallery {
+      grid-template-columns: 4.5rem 1fr;
+      align-items: start;
+    }
+    .product-gallery__viewer {
+      order: 2;
+    }
+    .product-gallery__thumbs {
+      order: 1;
+      flex-direction: column;
+      max-height: 40rem;
+    }
+  }
+
+  /* Mobile: swap the desktop radio/opacity viewer for a native
+     horizontally-swipeable strip; thumbnails are redundant with swipe. */
+  @media (max-width: 749px) {
+    .product-gallery__thumbs {
+      display: none;
+    }
+    .product-gallery__track {
+      position: static;
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      aspect-ratio: auto;
+      border-radius: 0;
+      background-color: transparent;
+      margin-inline: calc(-1 * var(--space-4));
+    }
+    .product-gallery__slide {
+      position: static;
+      opacity: 1;
+      flex: 0 0 100%;
+      aspect-ratio: 4 / 5;
+      scroll-snap-align: start;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  class ProductGallery extends HTMLElement {
+    connectedCallback() {
+      this.radios = Array.from(this.querySelectorAll('.product-gallery__radio'));
+      if (this.radios.length < 2) return;
+
+      this.addEventListener('keydown', (event) => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        const currentIndex = this.radios.findIndex((radio) => radio.checked);
+        if (currentIndex === -1) return;
+
+        const delta = event.key === 'ArrowRight' ? 1 : -1;
+        const nextIndex = (currentIndex + delta + this.radios.length) % this.radios.length;
+        this.radios[nextIndex].checked = true;
+        event.preventDefault();
+      });
+    }
+  }
+
+  customElements.define('product-gallery', ProductGallery);
+{% endjavascript %}
