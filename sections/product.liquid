@@ -5,46 +5,663 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/product
 {% endcomment %}
 
-<div class="product-images">
-  {% for image in product.images %}
-    {% render 'image', class: 'product-image', image: image %}
-  {% endfor %}
-</div>
 
-<div class="product-info">
-  <h1>{{ product.title }}</h1>
-  <p>{{ product.price | money }}</p>
-  <p>{{ product.description }}</p>
-</div>
+{% liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign pattern_name = product.metafields.custom.pattern_name.value
+  assign form_id = 'ProductForm-' | append: section.id
 
-<div class="product-form">
-  {% form 'product', product %}
-    {% assign current_variant = product.selected_or_first_available_variant %}
+  assign is_on_sale = false
+  if current_variant and current_variant.compare_at_price > current_variant.price
+    assign is_on_sale = true
+  endif
 
-    <select name="id">
-      {% for variant in product.variants %}
-        <option
-          value="{{ variant.id }}"
-          {% if variant == current_variant %}
-            selected="selected"
+  assign trigger_types = section.settings.size_guide_product_types | downcase | split: ','
+  assign show_size_guide = false
+  assign product_type_down = product.type | downcase
+  for trigger in trigger_types
+    assign trigger = trigger | strip
+    if trigger != blank and product_type_down == trigger
+      assign show_size_guide = true
+    endif
+  endfor
+  unless show_size_guide
+    for tag in product.tags
+      assign tag_down = tag | downcase
+      for trigger in trigger_types
+        assign trigger = trigger | strip
+        if trigger != blank and tag_down == trigger
+          assign show_size_guide = true
+        endif
+      endfor
+    endfor
+  endunless
+%}
+
+<div class="product-page section-padding" style="{% render 'section-padding', section: section %}">
+  <div class="container product-page__inner">
+    <div class="product-page__gallery">
+      {% render 'product-media-gallery', product: product, unique_id: section.id %}
+    </div>
+
+    <product-form class="product-page__buybox" data-form-id="{{ form_id }}">
+      {% if pattern_name != blank %}
+        <span class="eyebrow">{{ pattern_name }}</span>
+      {% endif %}
+      <h1 class="text-2xl">{{ product.title }}</h1>
+
+      <p class="product-page__price text-lg" data-price>
+        {% if current_variant == blank %}
+          {{ 'product.sold_out' | t }}
+        {% elsif is_on_sale %}
+          <span class="product-page__price--sale">{{ current_variant.price | money }}</span>
+          <span class="product-page__price--compare">{{ current_variant.compare_at_price | money }}</span>
+        {% else %}
+          {{ current_variant.price | money }}
+        {% endif %}
+      </p>
+
+      {% if product.description != blank %}
+        <div class="product-page__description text-base">{{ product.description }}</div>
+      {% endif %}
+
+      <script type="application/json" data-product-json>
+        [
+          {% for variant in product.variants %}
+            {
+              "id": {{ variant.id | json }},
+              "available": {{ variant.available | json }},
+              "priceHtml": {{ variant.price | money | json }},
+              "compareAtPriceHtml": {% if variant.compare_at_price > variant.price %}{{ variant.compare_at_price | money | json }}{% else %}null{% endif %},
+              "options": {{ variant.options | json }}
+            }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        ]
+      </script>
+
+      {% form 'product', product, id: form_id, class: 'product-page__form' %}
+        {% unless product.has_only_default_variant %}
+          <select
+            name="id"
+            class="product-page__variant-select"
+            data-variant-select
+            aria-label="{{ 'product.variant' | t }}"
+          >
+            {% for variant in product.variants %}
+              <option
+                value="{{ variant.id }}"
+                {% if variant == current_variant %}
+                  selected
+                {% endif %}
+                {% unless variant.available %}
+                  disabled
+                {% endunless %}
+              >
+                {{ variant.title }}
+                {% unless variant.available %}
+                  - {{ 'product.sold_out' | t }}
+                {% endunless %}
+              </option>
+            {% endfor %}
+          </select>
+
+          {% for option in product.options_with_values %}
+            <fieldset class="product-page__option" data-option-fieldset data-option-position="{{ option.position }}">
+              <legend class="text-sm">
+                {{ option.name }}: <span data-selected-value>{{ option.selected_value }}</span>
+              </legend>
+              <div class="product-page__option-values">
+                {% for value in option.values %}
+                  <input
+                    type="radio"
+                    name="OptionValue-{{ section.id }}-{{ option.position }}"
+                    id="OptionValue-{{ section.id }}-{{ option.position }}-{{ forloop.index }}"
+                    value="{{ value.name | escape }}"
+                    class="product-page__option-radio"
+                    {% if value.selected %}
+                      checked
+                    {% endif %}
+                  >
+                  <label
+                    for="OptionValue-{{ section.id }}-{{ option.position }}-{{ forloop.index }}"
+                    class="product-page__option-value{% if value.swatch.color or value.swatch.image %} product-page__option-value--swatch{% endif %}"
+                    {% if value.swatch.color %}
+                      style="--swatch-color: rgb({{ value.swatch.color.rgb }})"
+                    {% elsif value.swatch.image %}
+                      style="--swatch-image: url({{ value.swatch.image | image_url: width: 60 }})"
+                    {% endif %}
+                  >
+                    {% if value.swatch.color or value.swatch.image %}
+                      <span class="visually-hidden">{{ value.name }}</span>
+                    {% else %}
+                      {{ value.name }}
+                    {% endif %}
+                  </label>
+                {% endfor %}
+              </div>
+            </fieldset>
+          {% endfor %}
+        {% else %}
+          <input type="hidden" name="id" value="{{ current_variant.id }}">
+        {% endunless %}
+
+        <div class="product-page__quantity">
+          <label for="Quantity-{{ section.id }}" class="text-sm">{{ 'product.quantity' | t }}</label>
+          <div class="quantity-stepper">
+            <button
+              type="button"
+              class="quantity-stepper__button"
+              data-quantity-decrease
+              aria-label="{{ 'product.decrease_quantity' | t }}"
+            >
+              {{ 'icon-minus.svg' | inline_asset_content }}
+            </button>
+            <input
+              type="number"
+              class="quantity-stepper__input"
+              name="quantity"
+              id="Quantity-{{ section.id }}"
+              value="1"
+              min="1"
+              inputmode="numeric"
+            >
+            <button
+              type="button"
+              class="quantity-stepper__button"
+              data-quantity-increase
+              aria-label="{{ 'product.increase_quantity' | t }}"
+            >
+              {{ 'icon-plus.svg' | inline_asset_content }}
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="button button--primary product-page__submit"
+          data-atc-button
+          data-label-add="{{ 'product.add_to_cart' | t }}"
+          data-label-sold-out="{{ 'product.sold_out' | t }}"
+          {% if current_variant == blank or current_variant.available == false %}
+            disabled
           {% endif %}
         >
-          {{ variant.title }} - {{ variant.price | money }}
-        </option>
-      {% endfor %}
-    </select>
+          {% if current_variant == blank or current_variant.available == false %}
+            {{ 'product.sold_out' | t }}
+          {% else %}
+            {{ 'product.add_to_cart' | t }}
+          {% endif %}
+        </button>
+      {% endform %}
 
-    <input type="text" name="quantity" min="1" value="1">
-
-    <input type="submit" value="Add to cart">
-    {{ form | payment_button }}
-  {% endform %}
+      {% if show_size_guide %}
+        <button type="button" class="product-page__size-guide-trigger text-sm" data-open-size-guide>
+          {{ 'icon-ruler.svg' | inline_asset_content }}
+          {{ 'product.size_guide' | t }}
+        </button>
+      {% endif %}
+    </product-form>
+  </div>
 </div>
+
+<div class="product-sticky-bar" data-sticky-bar hidden>
+  <div class="container product-sticky-bar__inner">
+    <div class="product-sticky-bar__info">
+      <span class="text-sm">{{ product.title }}</span>
+      <span class="text-sm product-sticky-bar__price" data-sticky-price>
+        {% if current_variant %}{{ current_variant.price | money }}{% endif %}
+      </span>
+    </div>
+    <button
+      type="submit"
+      form="{{ form_id }}"
+      class="button button--primary product-sticky-bar__submit"
+      data-sticky-submit
+      {% if current_variant == blank or current_variant.available == false %}
+        disabled
+      {% endif %}
+    >
+      {{ 'product.add_to_cart' | t }}
+    </button>
+  </div>
+</div>
+
+{% if show_size_guide %}
+  <dialog class="product-size-guide" scroll-lock data-size-guide-dialog aria-label="{{ 'product.size_guide' | t }}">
+    <div class="product-size-guide__header">
+      <h2 class="text-lg">{{ 'product.size_guide' | t }}</h2>
+      <button
+        type="button"
+        class="product-size-guide__close"
+        data-close-size-guide
+        aria-label="{{ 'general.close' | t }}"
+      >
+        {{ 'icon-close.svg' | inline_asset_content }}
+      </button>
+    </div>
+
+    <div class="product-size-guide__body">
+      {% if section.settings.size_guide_chart != blank %}
+        <div class="product-size-guide__chart text-sm">{{ section.settings.size_guide_chart }}</div>
+      {% endif %}
+
+      <div class="product-size-guide__illustration">
+        <svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="SizeGuideTitle-{{ section.id }}">
+          <title id="SizeGuideTitle-{{ section.id }}">{{ 'product.size_guide_illustration_title' | t }}</title>
+          <line x1="20" y1="230" x2="380" y2="230" stroke="var(--color-sand)" stroke-width="1" />
+          <rect x="164" y="134" width="72" height="96" fill="var(--color-sand)" opacity="0.5" />
+          <rect x="168" y="150" width="64" height="80" fill="var(--color-blush)" opacity="0.6" />
+          <rect x="180" y="166" width="40" height="64" fill="var(--color-clay)" opacity="0.35" />
+          <rect x="154" y="104" width="92" height="24" rx="3" fill="var(--color-ink-muted)" opacity="0.4" />
+          <rect x="184" y="189" width="32" height="18" rx="2" fill="var(--color-ink-muted)" opacity="0.6" />
+        </svg>
+        <ul class="product-size-guide__legend" role="list">
+          <li><span class="product-size-guide__swatch product-size-guide__swatch--small"></span>{{ 'product.size_small' | t }}</li>
+          <li><span class="product-size-guide__swatch product-size-guide__swatch--medium"></span>{{ 'product.size_medium' | t }}</li>
+          <li><span class="product-size-guide__swatch product-size-guide__swatch--large"></span>{{ 'product.size_large' | t }}</li>
+        </ul>
+      </div>
+    </div>
+  </dialog>
+{% endif %}
+
+{% stylesheet %}
+  product-form {
+    display: block;
+  }
+
+  .product-page__inner {
+    display: grid;
+    gap: var(--space-6);
+  }
+  @media (min-width: 750px) {
+    .product-page__inner {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-8);
+      align-items: start;
+    }
+  }
+
+  .product-page__buybox {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  .product-page__buybox h1 {
+    margin: 0;
+  }
+  .product-page__price {
+    color: var(--color-ink-muted);
+  }
+  .product-page__price--sale {
+    color: var(--color-clay);
+    margin-right: var(--space-2);
+  }
+  .product-page__price--compare {
+    text-decoration: line-through;
+  }
+  .product-page__description {
+    color: var(--color-ink-muted);
+    max-width: 60ch;
+  }
+
+  .product-page__form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    width: 100%;
+    margin-top: var(--space-2);
+  }
+
+  /* No-JS default: plain <select>, options hidden. Once <product-form>
+     is defined (script has run), flip to the pretty swatch/pill UI. */
+  .product-page__variant-select {
+    display: block;
+    width: 100%;
+    max-width: 20rem;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-sand);
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+  }
+  .product-page__option {
+    display: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+  }
+  product-form:defined .product-page__variant-select {
+    display: none;
+  }
+  product-form:defined .product-page__option {
+    display: block;
+  }
+
+  .product-page__option legend {
+    color: var(--color-ink-muted);
+    margin-bottom: var(--space-2);
+    padding: 0;
+  }
+  .product-page__option-values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .product-page__option-radio {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .product-page__option-value {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    height: 2.25rem;
+    padding-inline: var(--space-3);
+    border: 1px solid var(--color-sand);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-standard);
+  }
+  .product-page__option-value--swatch {
+    min-width: 2.25rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border-radius: 50%;
+    background-color: var(--swatch-color, var(--color-sand));
+    background-image: var(--swatch-image, none);
+    background-size: cover;
+    background-position: center;
+  }
+  .product-page__option-radio:checked + .product-page__option-value {
+    border-color: var(--color-clay);
+    box-shadow: 0 0 0 1px var(--color-clay);
+  }
+  .product-page__option-radio:disabled + .product-page__option-value {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .product-page__quantity {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .product-page__quantity label {
+    color: var(--color-ink-muted);
+  }
+
+  .product-page__submit {
+    width: 100%;
+    max-width: 24rem;
+  }
+
+  .product-page__size-guide-trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: none;
+    border: none;
+    color: var(--color-ink-muted);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+    padding: 0;
+  }
+  .product-page__size-guide-trigger svg {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+
+  /* Sticky add-to-cart bar — Phase 5 directive #6. Its submit button
+     uses form="{{ form_id }}" so it rides the SAME product form (and
+     therefore the same Phase 2 cart-drawer submit listener) without
+     any duplicate add-to-cart logic here. */
+  .product-sticky-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    background-color: var(--color-bg);
+    border-top: 1px solid var(--color-sand);
+    box-shadow: var(--shadow-soft);
+    padding-block: var(--space-3);
+  }
+  .product-sticky-bar[hidden] {
+    display: none;
+  }
+  .product-sticky-bar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+  .product-sticky-bar__info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .product-sticky-bar__info span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .product-sticky-bar__price {
+    color: var(--color-ink-muted);
+  }
+  .product-sticky-bar__submit {
+    width: auto;
+    flex-shrink: 0;
+    padding-inline: var(--space-6);
+  }
+
+  /* Size guide dialog */
+  .product-size-guide {
+    margin: auto;
+    width: min(32rem, calc(100vw - var(--space-6)));
+    max-height: min(36rem, 85vh);
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: 0;
+    background-color: var(--color-bg);
+    box-shadow: var(--shadow-soft);
+  }
+  .product-size-guide::backdrop {
+    background-color: rgba(46, 42, 38, 0.4);
+  }
+  .product-size-guide__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid var(--color-sand);
+  }
+  .product-size-guide__close {
+    display: flex;
+    background: none;
+    border: none;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+  .product-size-guide__close svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  .product-size-guide__body {
+    padding: var(--space-4) var(--space-5) var(--space-5);
+    overflow-y: auto;
+  }
+  .product-size-guide__chart {
+    margin-bottom: var(--space-5);
+    color: var(--color-ink-muted);
+  }
+  .product-size-guide__illustration svg {
+    width: 100%;
+    height: auto;
+  }
+  .product-size-guide__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    list-style: none;
+    padding: 0;
+    margin: var(--space-3) 0 0;
+    color: var(--color-ink-muted);
+    font-size: var(--text-sm);
+  }
+  .product-size-guide__legend li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .product-size-guide__swatch {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .product-size-guide__swatch--small {
+    background-color: var(--color-clay);
+    opacity: 0.35;
+  }
+  .product-size-guide__swatch--medium {
+    background-color: var(--color-blush);
+    opacity: 0.6;
+  }
+  .product-size-guide__swatch--large {
+    background-color: var(--color-sand);
+    opacity: 0.5;
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  class ProductForm extends HTMLElement {
+    connectedCallback() {
+      const dataEl = this.querySelector('[data-product-json]');
+      this.variants = dataEl ? JSON.parse(dataEl.textContent) : [];
+      this.select = this.querySelector('[data-variant-select]');
+      this.priceEl = this.querySelector('[data-price]');
+      this.atcButton = this.querySelector('[data-atc-button]');
+
+      this.addEventListener('change', (event) => {
+        if (event.target.closest('[data-option-fieldset]')) {
+          this.onOptionChange();
+        }
+      });
+
+      this.addEventListener('click', (event) => {
+        const stepButton = event.target.closest('[data-quantity-increase], [data-quantity-decrease]');
+        if (stepButton) {
+          const input = this.querySelector('.quantity-stepper__input');
+          let quantity = parseInt(input.value, 10) || 1;
+          quantity += stepButton.hasAttribute('data-quantity-increase') ? 1 : -1;
+          if (quantity < 1) quantity = 1;
+          input.value = quantity;
+        }
+
+        if (event.target.closest('[data-open-size-guide]')) {
+          document.querySelector('[data-size-guide-dialog]')?.showModal();
+        }
+      });
+
+      this.setupStickyBar();
+    }
+
+    onOptionChange() {
+      const selected = [];
+      this.querySelectorAll('[data-option-fieldset]').forEach((fieldset) => {
+        const checked = fieldset.querySelector('input:checked');
+        const position = Number(fieldset.dataset.optionPosition) - 1;
+        selected[position] = checked ? checked.value : null;
+        const label = fieldset.querySelector('[data-selected-value]');
+        if (label && checked) label.textContent = checked.value;
+      });
+
+      const match = this.variants.find((variant) =>
+        variant.options.every((value, index) => value === selected[index])
+      );
+      if (match) this.updateVariant(match);
+    }
+
+    updateVariant(variant) {
+      if (this.select) this.select.value = variant.id;
+
+      if (this.priceEl) {
+        this.priceEl.innerHTML = variant.compareAtPriceHtml
+          ? `<span class="product-page__price--sale">${variant.priceHtml}</span><span class="product-page__price--compare">${variant.compareAtPriceHtml}</span>`
+          : variant.priceHtml;
+      }
+
+      if (this.atcButton) {
+        this.atcButton.disabled = !variant.available;
+        this.atcButton.textContent = variant.available
+          ? this.atcButton.dataset.labelAdd
+          : this.atcButton.dataset.labelSoldOut;
+      }
+
+      const stickyPrice = document.querySelector('[data-sticky-price]');
+      if (stickyPrice) stickyPrice.textContent = variant.priceHtml;
+
+      const stickySubmit = document.querySelector('[data-sticky-submit]');
+      if (stickySubmit) stickySubmit.disabled = !variant.available;
+    }
+
+    setupStickyBar() {
+      const stickyBar = document.querySelector('[data-sticky-bar]');
+      if (!stickyBar || !this.atcButton || !('IntersectionObserver' in window)) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          const scrolledPast = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+          stickyBar.hidden = !scrolledPast;
+        },
+        { threshold: 0 }
+      );
+      observer.observe(this.atcButton);
+    }
+  }
+
+  customElements.define('product-form', ProductForm);
+
+  document.addEventListener('click', (event) => {
+    if (event.target.closest('[data-close-size-guide]')) {
+      document.querySelector('[data-size-guide-dialog]')?.close();
+    }
+  });
+
+  document.querySelector('[data-size-guide-dialog]')?.addEventListener('click', (event) => {
+    if (event.target === event.currentTarget) event.currentTarget.close();
+  });
+{% endjavascript %}
 
 {% schema %}
 {
   "name": "t:general.product",
-  "settings": [],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:general.product_size_guide"
+    },
+    {
+      "type": "text",
+      "id": "size_guide_product_types",
+      "label": "t:labels.size_guide_product_types",
+      "info": "t:info.size_guide_product_types",
+      "default": "Rug, Mat, Runner, Doormat"
+    },
+    {
+      "type": "richtext",
+      "id": "size_guide_chart",
+      "label": "t:labels.size_guide_chart"
+    }
+  ],
   "disabled_on": {
     "groups": ["header", "footer"]
   }
