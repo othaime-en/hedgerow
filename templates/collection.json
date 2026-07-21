@@ -9,12 +9,14 @@
  */
 {
   "sections": {
+    "collection-intro": {
+      "type": "collection-intro",
+      "settings": {}
+    },
     "main": {
       "type": "collection",
       "settings": {}
     }
   },
-  "order": [
-    "main"
-  ]
+  "order": ["collection-intro", "main"]
 }
