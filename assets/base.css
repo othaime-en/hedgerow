@@ -230,6 +230,23 @@ small,
   color: var(--color-ink-muted);
 }
 
+/* Screen-reader-only text — visually hidden but still announced and
+   focusable. Standard/off-the-shelf pattern (Bootstrap/WAI-ARIA
+   Authoring Practices), added here in Phase 4 for the collection sort
+   control's label; several existing controls (mobile nav toggle,
+   search) could reasonably adopt this later. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* =====================================================================
    Media caption / scrim
    Image tile with a label overlaid bottom-left on a gradient scrim for

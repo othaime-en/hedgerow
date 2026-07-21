@@ -1,0 +1,117 @@
+{% doc %}
+  Full-width "shop the room" lifestyle tile, inserted into the product
+  grid in sections/collection.liquid at an interval controlled by that
+  section's "Products between lifestyle breaks" setting (Implementation
+  Plan Phase 4, directive #3). Rendered surgically via
+  `{% content_for 'block', type: 'collection-lifestyle-break', id: ... %}`
+  from inside the product loop, NOT via `{% content_for 'blocks' %}` —
+  add more than one of these blocks to cycle through several images as
+  a long grid repeats the break point.
+
+  @example
+  {% content_for 'block', type: 'collection-lifestyle-break', id: block.id %}
+{% enddoc %}
+
+{% liquid
+  assign wrapper = 'div'
+  if block.settings.url != blank
+    assign wrapper = 'a'
+  endif
+%}
+
+<{{ wrapper }}
+  {% if block.settings.url != blank %}
+    href="{{ block.settings.url }}"
+  {% endif %}
+  class="collection-lifestyle-break media-caption"
+  {{ block.shopify_attributes }}
+>
+  {% if block.settings.image != blank %}
+    {{
+      block.settings.image
+      | image_url: width: 2000
+      | image_tag:
+        loading: 'lazy',
+        sizes: '100vw',
+        widths: '750, 1100, 1500, 2000',
+        class: 'collection-lifestyle-break__image'
+    }}
+  {% else %}
+    <div class="collection-lifestyle-break__placeholder"></div>
+  {% endif %}
+
+  {% if block.settings.label != blank %}
+    <span class="media-caption__label collection-lifestyle-break__label">
+      {{ block.settings.label }}
+      {% if block.settings.cta_text != blank %}
+        <span class="collection-lifestyle-break__cta text-sm">{{ block.settings.cta_text }}</span>
+      {% endif %}
+    </span>
+  {% endif %}
+</{{ wrapper }}>
+
+{% stylesheet %}
+  .collection-lifestyle-break {
+    display: block;
+    grid-column: 1 / -1;
+    text-decoration: none;
+  }
+  .collection-lifestyle-break__image {
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    object-fit: cover;
+  }
+  .collection-lifestyle-break__placeholder {
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    background-color: var(--color-surface);
+  }
+  .collection-lifestyle-break__label {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+    font-size: var(--text-xl);
+  }
+  .collection-lifestyle-break__cta {
+    font-family: var(--font-body);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  @media (max-width: 749px) {
+    .collection-lifestyle-break__image,
+    .collection-lifestyle-break__placeholder {
+      aspect-ratio: 4 / 5;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.collection_lifestyle_break",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:labels.image"
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "t:labels.label",
+      "default": "Shop the room"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "t:labels.cta_text"
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": "t:labels.link"
+    }
+  ],
+  "presets": [{ "name": "t:general.collection_lifestyle_break" }]
+}
+{% endschema %}
