@@ -99,6 +99,31 @@
     "password": "Password",
     "enter": "Enter"
   },
+  "product": {
+    "add_to_cart": "Add to cart",
+    "sold_out": "Sold out",
+    "quantity": "Quantity",
+    "decrease_quantity": "Decrease quantity",
+    "increase_quantity": "Increase quantity",
+    "variant": "Variant",
+    "gallery_thumbnails": "Product images",
+    "view_image": "View image {{ index }} of {{ count }}",
+    "size_guide": "Size guide",
+    "size_guide_illustration_title": "Illustration comparing common rug sizes against a sofa and coffee table",
+    "size_small": "5 × 8 ft — a small seating area or under a coffee table",
+    "size_medium": "8 × 10 ft — fits most standard sofa arrangements",
+    "size_large": "9 × 12 ft — anchors a full living room set",
+    "materials_composition": "Materials & composition",
+    "materials_weight": "Weight",
+    "materials_care": "Care instructions",
+    "materials_made_to_order": "Made to order",
+    "view_full_pattern": "Shop the full pattern",
+    "reviews_empty_state": "Reviews will appear here once a `review` metaobject entry references this product.",
+    "reviews_summary": {
+      "one": "{{ rating }} out of 5 · {{ count }} review",
+      "other": "{{ rating }} out of 5 · {{ count }} reviews"
+    }
+  },
   "reviews": {
     "rating": "Rated {{ rating }} out of 5"
   },
