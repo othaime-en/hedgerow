@@ -45,6 +45,24 @@
   "category_grid": {
     "empty_state": "Add category-tile blocks to fill this grid."
   },
+  "collection": {
+    "product_count": {
+      "one": "{{ count }} product",
+      "other": "{{ count }} products"
+    },
+    "filters": "Filters",
+    "sort_by": "Sort by",
+    "apply_filters": "Apply filters",
+    "clear_all": "Clear all",
+    "view_results": "View results",
+    "empty_state": "No products match these filters yet.",
+    "no_filters": "Filters will appear here once they're enabled in Search & Discovery.",
+    "price_from": "From",
+    "price_to": "To",
+    "sold_out": "Sold out",
+    "sale": "Sale",
+    "price_from_html": "From {{ price }}"
+  },
   "collections": {
     "title": "Collections"
   },
