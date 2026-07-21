@@ -1,0 +1,218 @@
+{% doc %}
+  Product card used in the collection grid (sections/collection.liquid).
+  Shows the studio image with a hover-swap to the next gallery image
+  (typically the in-room lifestyle shot per BRAND_BRIEF.md §6), the
+  pattern name (custom.pattern_name metafield), title, price, and a
+  compact swatch row when the product has more than one value on a
+  Color/Colour/Pattern option.
+
+  @param {product} product - the product to render
+
+  @example
+  {% render 'product-card', product: product %}
+{% enddoc %}
+
+{% liquid
+  assign secondary_image = null
+  for media in product.media
+    if media.media_type == 'image' and media.id != product.featured_media.id
+      assign secondary_image = media
+      break
+    endif
+  endfor
+
+  assign pattern_name = product.metafields.custom.pattern_name.value
+
+  assign swatch_option = null
+  for option in product.options_with_values
+    assign option_name_down = option.name | downcase
+    if option_name_down contains 'color' or option_name_down contains 'colour' or option_name_down contains 'pattern'
+      assign swatch_option = option
+      break
+    endif
+  endfor
+
+  assign is_on_sale = false
+  if product.compare_at_price > product.price and product.price_varies == false
+    assign is_on_sale = true
+  endif
+%}
+
+<div class="product-card{% if product.available == false %} product-card--sold-out{% endif %}">
+  <a href="{{ product.url }}" class="product-card__media" aria-label="{{ product.title | escape }}">
+    {% if product.featured_image %}
+      {{
+        product.featured_image
+        | image_url: width: 800
+        | image_tag:
+          loading: 'lazy',
+          sizes: '(min-width: 1000px) 25vw, (min-width: 750px) 33vw, 50vw',
+          widths: '400, 600, 800',
+          class: 'product-card__image product-card__image--primary'
+      }}
+      {% if secondary_image %}
+        {{
+          secondary_image
+          | image_url: width: 800
+          | image_tag:
+            loading: 'lazy',
+            sizes: '(min-width: 1000px) 25vw, (min-width: 750px) 33vw, 50vw',
+            widths: '400, 600, 800',
+            class: 'product-card__image product-card__image--secondary'
+        }}
+      {% endif %}
+    {% else %}
+      <div class="product-card__placeholder"></div>
+    {% endif %}
+    {% if product.available == false %}
+      <span class="product-card__badge text-xs">{{ 'collection.sold_out' | t }}</span>
+    {% elsif is_on_sale %}
+      <span class="product-card__badge product-card__badge--sale text-xs">{{ 'collection.sale' | t }}</span>
+    {% endif %}
+  </a>
+
+  <div class="product-card__details">
+    {% if pattern_name != blank %}
+      <span class="product-card__pattern text-xs">{{ pattern_name }}</span>
+    {% endif %}
+
+    <a href="{{ product.url }}" class="product-card__title text-base">{{ product.title }}</a>
+
+    <p class="product-card__price text-sm">
+      {% if product.price_varies %}
+        {{ 'collection.price_from_html' | t: price: product.price_min | money }}
+      {% elsif is_on_sale %}
+        <span class="product-card__price--sale">{{ product.price | money }}</span>
+        <span class="product-card__price--compare">{{ product.compare_at_price | money }}</span>
+      {% else %}
+        {{ product.price | money }}
+      {% endif %}
+    </p>
+
+    {% if swatch_option != blank and swatch_option.values.size > 1 %}
+      <div class="product-card__swatches" aria-hidden="true">
+        {% for value in swatch_option.values limit: 5 %}
+          <span
+            class="product-card__swatch"
+            {% if value.swatch.color %}
+              style="--swatch-color: rgb({{ value.swatch.color.rgb }})"
+            {% elsif value.swatch.image %}
+              style="--swatch-image: url({{ value.swatch.image | image_url: width: 40 }})"
+            {% endif %}
+            title="{{ value.name }}"
+          ></span>
+        {% endfor %}
+        {% if swatch_option.values.size > 5 %}
+          <span class="product-card__swatch-more text-xs">+{{ swatch_option.values.size | minus: 5 }}</span>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .product-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .product-card__media {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+  }
+  .product-card__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity var(--duration-base) var(--ease-standard);
+  }
+  .product-card__image--primary {
+    position: relative;
+    opacity: 1;
+  }
+  .product-card__image--secondary {
+    opacity: 0;
+  }
+  .product-card__media:hover .product-card__image--secondary {
+    opacity: 1;
+  }
+  .product-card__placeholder {
+    width: 100%;
+    height: 100%;
+  }
+
+  .product-card__badge {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg);
+    color: var(--color-ink-muted);
+  }
+  .product-card__badge--sale {
+    background-color: var(--color-clay);
+    color: var(--color-white);
+  }
+
+  .product-card__details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .product-card__pattern {
+    color: var(--color-ink-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-eyebrow);
+  }
+  .product-card__title {
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  .product-card__title:hover {
+    color: var(--color-clay);
+  }
+  .product-card__price {
+    color: var(--color-ink-muted);
+  }
+  .product-card__price--sale {
+    color: var(--color-clay);
+    margin-right: var(--space-2);
+  }
+  .product-card__price--compare {
+    text-decoration: line-through;
+    color: var(--color-ink-muted);
+  }
+
+  .product-card--sold-out .product-card__media {
+    opacity: 0.6;
+  }
+
+  .product-card__swatches {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin-top: var(--space-1);
+  }
+  .product-card__swatch {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background-color: var(--swatch-color, var(--color-sand));
+    background-image: var(--swatch-image, none);
+    background-size: cover;
+    background-position: center;
+    border: 1px solid var(--color-sand);
+  }
+  .product-card__swatch-more {
+    color: var(--color-ink-muted);
+  }
+{% endstylesheet %}
