@@ -12,9 +12,24 @@
     "main": {
       "type": "product",
       "settings": {}
+    },
+    "product-materials": {
+      "type": "product-materials",
+      "settings": {}
+    },
+    "product-cross-sell": {
+      "type": "product-cross-sell",
+      "settings": {}
+    },
+    "product-reviews": {
+      "type": "product-reviews",
+      "settings": {}
     }
   },
   "order": [
-    "main"
+    "main",
+    "product-materials",
+    "product-cross-sell",
+    "product-reviews"
   ]
 }
