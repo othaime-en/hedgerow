@@ -1,0 +1,81 @@
+{
+  "sections": {
+    "header": {
+      "type": "page-header",
+      "settings": {
+        "height": "standard",
+        "text_color": "light",
+        "scrim": true,
+        "eyebrow": "Our story",
+        "heading": "",
+        "subtext": "A home for pattern and color that feels curated, not stocked.",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "story-1": {
+      "type": "story-block",
+      "settings": {
+        "image_position": "left",
+        "background": "bg",
+        "eyebrow": "Where it started",
+        "heading": "We wanted our own home to feel finished",
+        "story": "Not stocked, not showroom-perfect — finished, the way a room feels once someone with real taste has lived in it a while. Every pattern here started as an idea for our own space before it became something you could order.",
+        "cta_text": "",
+        "cta_link": "",
+        "padding_top": 80,
+        "padding_bottom": 64
+      }
+    },
+    "story-2": {
+      "type": "story-block",
+      "settings": {
+        "image_position": "right",
+        "background": "surface",
+        "eyebrow": "Why made-to-order",
+        "heading": "Printed after you order it, not before",
+        "story": "Zero overstock, zero warehouse of guesses about what you'll like. Each piece is made once someone chooses it, which means less waste and more room to keep introducing new patterns instead of clearing out old ones.",
+        "cta_text": "",
+        "cta_link": "",
+        "padding_top": 64,
+        "padding_bottom": 64
+      }
+    },
+    "proof": {
+      "type": "brand-proof-strip",
+      "settings": {
+        "background": "bg",
+        "padding_top": 64,
+        "padding_bottom": 96
+      },
+      "blocks": {
+        "stat-1": {
+          "type": "proof-stat",
+          "settings": {
+            "icon": "icon-package.svg",
+            "stat_text": "Printed to order",
+            "description": "Zero overstock, zero waste — made after you order it."
+          }
+        },
+        "stat-2": {
+          "type": "proof-stat",
+          "settings": {
+            "icon": "icon-droplet.svg",
+            "stat_text": "OEKO-TEX certified inks",
+            "description": "Safe for skin, safe for the water they're rinsed into."
+          }
+        },
+        "stat-3": {
+          "type": "proof-stat",
+          "settings": {
+            "icon": "icon-leaf.svg",
+            "stat_text": "Natural fibers",
+            "description": "Cotton and linen blends sourced for softness that lasts."
+          }
+        }
+      },
+      "block_order": ["stat-1", "stat-2", "stat-3"]
+    }
+  },
+  "order": ["header", "story-1", "story-2", "proof"]
+}
