@@ -403,6 +403,59 @@ small,
 }
 
 /* =====================================================================
+   Quantity stepper
+   Originally scoped inside sections/cart-drawer.liquid; promoted here in
+   Phase 5 so sections/product.liquid can share it. Section-local
+   {% stylesheet %} content is subset per-page by Shopify, so a
+   cross-section shared component belongs in base.css, not in whichever
+   section happened to define it first.
+   ===================================================================== */
+
+.quantity-stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 1px solid var(--color-sand);
+  border-radius: var(--radius-sm);
+  padding: 2px var(--space-1);
+}
+.quantity-stepper__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: none;
+  border: none;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+.quantity-stepper__button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.quantity-stepper__button svg {
+  width: 0.6rem;
+  height: 0.6rem;
+}
+.quantity-stepper__input {
+  width: 2rem;
+  border: none;
+  background: none;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink);
+  /* Hide native number spinners so our own +/- buttons are the only control */
+  -moz-appearance: textfield;
+}
+.quantity-stepper__input::-webkit-outer-spin-button,
+.quantity-stepper__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* =====================================================================
    Motion utility
    ===================================================================== */
 

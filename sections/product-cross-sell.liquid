@@ -1,0 +1,167 @@
+{% doc %}
+  "Shop the Pattern" / "Complete the Set" cross-sell (Implementation
+  Plan Phase 5, directive #3 — called the highest-leverage merchandising
+  feature for a POD catalog). Pulls other products sharing the current
+  product's custom.pattern_name metafield value from a configurable
+  base collection (defaults to the whole catalog).
+
+  Performance note: since Liquid has no native "find products by
+  metafield value" query outside of an actual filtered collection page
+  request (see the LiquidDoc note below on why that page-level
+  mechanism can't be reused here), this loops the base collection's
+  products directly and matches in Liquid, capped at a scan limit. Fine
+  for a small, curated pattern catalog; if the catalog grows large,
+  the more scalable fix is a real per-pattern automated collection
+  (metafield-based condition, no code change needed) referenced here
+  instead of `collections.all`.
+
+  @example
+  Added via templates/product.json; reads the current `product` object.
+{% enddoc %}
+{% liquid
+  assign pattern_name = product.metafields.custom.pattern_name.value
+  assign base_collection = section.settings.base_collection
+  if base_collection == blank
+    assign base_collection = collections.all
+  endif
+  assign max_items = section.settings.max_items
+  assign scan_limit = 100
+%}
+
+{% if pattern_name != blank %}
+  {% liquid
+    assign shown = 0
+    for other in base_collection.products limit: scan_limit
+      if shown >= max_items
+        break
+      endif
+      unless other.id == product.id
+        if other.metafields.custom.pattern_name.value == pattern_name
+          assign shown = shown | plus: 1
+        endif
+      endunless
+    endfor
+  %}
+
+  {% if shown > 0 %}
+    <div class="product-cross-sell section-padding" style="{% render 'section-padding', section: section %}">
+      <div class="container">
+        <div class="product-cross-sell__header">
+          {% if section.settings.eyebrow != blank %}
+            <span class="eyebrow">{{ section.settings.eyebrow }}</span>
+          {% endif %}
+          {% if section.settings.heading != blank %}
+            <h2 class="text-xl">{{ section.settings.heading | replace: '{{ pattern }}', pattern_name }}</h2>
+          {% endif %}
+          <a href="{{ routes.all_products_collection_url }}?filter.p.m.custom.pattern_name={{ pattern_name | url_param_escape }}" class="product-cross-sell__view-all text-sm">
+            {{ 'product.view_full_pattern' | t }}
+          </a>
+        </div>
+
+        <div class="product-cross-sell__grid">
+          {% assign shown = 0 %}
+          {% for other in base_collection.products limit: scan_limit %}
+            {% if shown >= max_items %}
+              {% break %}
+            {% endif %}
+            {% unless other.id == product.id %}
+              {% if other.metafields.custom.pattern_name.value == pattern_name %}
+                {% render 'product-card', product: other %}
+                {% assign shown = shown | plus: 1 %}
+              {% endif %}
+            {% endunless %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endif %}
+
+{% stylesheet %}
+  .product-cross-sell__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+  }
+  .product-cross-sell__view-all {
+    color: var(--color-ink-muted);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    white-space: nowrap;
+  }
+
+  .product-cross-sell__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4) var(--space-3);
+  }
+  @media (min-width: 750px) {
+    .product-cross-sell__grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-5) var(--space-4);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.product_cross_sell",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "Complete the set"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "info": "t:info.cross_sell_heading",
+      "default": "More from the {{ pattern }} pattern"
+    },
+    {
+      "type": "collection",
+      "id": "base_collection",
+      "label": "t:labels.base_collection",
+      "info": "t:info.cross_sell_base_collection"
+    },
+    {
+      "type": "range",
+      "id": "max_items",
+      "label": "t:labels.max_items",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "header",
+      "content": "t:general.spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ]
+}
+{% endschema %}
