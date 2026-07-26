@@ -1,0 +1,103 @@
+{
+  "sections": {
+    "header": {
+      "type": "page-header",
+      "settings": {
+        "height": "compact",
+        "text_color": "dark",
+        "scrim": false,
+        "eyebrow": "Process",
+        "heading": "",
+        "subtext": "From an original drawing to a piece in your home — here's what happens in between.",
+        "padding_top": 0,
+        "padding_bottom": 64
+      }
+    },
+    "process": {
+      "type": "process-steps",
+      "settings": {
+        "eyebrow": "How it's made",
+        "heading": "From sketch to shelf",
+        "padding_top": 0,
+        "padding_bottom": 80
+      },
+      "blocks": {
+        "step-1": {
+          "type": "process-step",
+          "settings": {
+            "step_number": "01",
+            "heading": "Pattern is designed",
+            "description": "Every motif starts as an original drawing or painting before it's digitized."
+          }
+        },
+        "step-2": {
+          "type": "process-step",
+          "settings": {
+            "step_number": "02",
+            "heading": "You place an order",
+            "description": "Nothing is printed until someone chooses it — that's the whole point."
+          }
+        },
+        "step-3": {
+          "type": "process-step",
+          "settings": {
+            "step_number": "03",
+            "heading": "Printed to order",
+            "description": "OEKO-TEX certified inks, printed on natural-fiber bases in small batches."
+          }
+        },
+        "step-4": {
+          "type": "process-step",
+          "settings": {
+            "step_number": "04",
+            "heading": "Checked and shipped",
+            "description": "Every piece is inspected by hand before it leaves for your door."
+          }
+        }
+      },
+      "block_order": ["step-1", "step-2", "step-3", "step-4"]
+    },
+    "materials-story": {
+      "type": "story-block",
+      "settings": {
+        "image_position": "left",
+        "background": "surface",
+        "eyebrow": "Materials",
+        "heading": "Natural fibers, chosen for how they age",
+        "story": "Cotton and linen blends that soften with washing instead of pilling or thinning — the kind of materials you keep, not replace next season.",
+        "cta_text": "",
+        "cta_link": "",
+        "padding_top": 64,
+        "padding_bottom": 64
+      }
+    },
+    "proof": {
+      "type": "brand-proof-strip",
+      "settings": {
+        "background": "bg",
+        "padding_top": 64,
+        "padding_bottom": 96
+      },
+      "blocks": {
+        "stat-1": {
+          "type": "proof-stat",
+          "settings": {
+            "icon": "icon-shield-check.svg",
+            "stat_text": "Made to order, made to last",
+            "description": "Every piece checked by hand before it ships."
+          }
+        },
+        "stat-2": {
+          "type": "proof-stat",
+          "settings": {
+            "icon": "icon-package.svg",
+            "stat_text": "Printed to order",
+            "description": "Zero overstock, zero waste — made after you order it."
+          }
+        }
+      },
+      "block_order": ["stat-1", "stat-2"]
+    }
+  },
+  "order": ["header", "process", "materials-story", "proof"]
+}
