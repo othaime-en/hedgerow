@@ -10,11 +10,13 @@
   "blog": {
     "article_comments": "Comments",
     "article_metadata_html": "{{ date }} by {{ author }}",
+    "back_to_journal": "Back to the journal",
     "comment_form_body": "Comment",
     "comment_form_email": "Email",
     "comment_form_name": "Name",
     "comment_form_submit": "Post",
-    "comment_form_title": "Add a comment"
+    "comment_form_title": "Add a comment",
+    "no_articles": "No posts here yet — check back soon."
   },
   "brand_proof_strip": {
     "empty_state": "Add stat blocks to show trust/quality claims here."
@@ -98,6 +100,9 @@
     "title": "This shop is private",
     "password": "Password",
     "enter": "Enter"
+  },
+  "process_steps": {
+    "empty_state": "Add process-step blocks to show your made-to-order process here."
   },
   "product": {
     "add_to_cart": "Add to cart",
