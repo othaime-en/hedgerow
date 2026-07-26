@@ -1,4 +1,4 @@
-{% doc %}
+{% comment %}
   "Shop the Pattern" / "Complete the Set" cross-sell (Implementation
   Plan Phase 5, directive #3 — called the highest-leverage merchandising
   feature for a POD catalog). Pulls other products sharing the current
@@ -17,7 +17,7 @@
 
   @example
   Added via templates/product.json; reads the current `product` object.
-{% enddoc %}
+{% endcomment %}
 {% liquid
   assign pattern_name = product.metafields.custom.pattern_name.value
   assign base_collection = section.settings.base_collection
@@ -51,9 +51,12 @@
             <span class="eyebrow">{{ section.settings.eyebrow }}</span>
           {% endif %}
           {% if section.settings.heading != blank %}
-            <h2 class="text-xl">{{ section.settings.heading | replace: '{{ pattern }}', pattern_name }}</h2>
+            <h2 class="text-xl">{{ section.settings.heading | replace: pattern }}', pattern_name | strip }}</h2>
           {% endif %}
-          <a href="{{ routes.all_products_collection_url }}?filter.p.m.custom.pattern_name={{ pattern_name | url_param_escape }}" class="product-cross-sell__view-all text-sm">
+          <a
+            href="{{ routes.all_products_collection_url }}?filter.p.m.custom.pattern_name={{ pattern_name | url_param_escape }}"
+            class="product-cross-sell__view-all text-sm"
+          >
             {{ 'product.view_full_pattern' | t }}
           </a>
         </div>
