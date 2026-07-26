@@ -1,4 +1,4 @@
-{% doc %}
+{% comment %}
   Materials & quality block (Implementation Plan Phase 5, directive #2):
   weight, composition, care instructions, and the made-to-order note,
   each pulled from a structured product metafield rather than the
@@ -12,7 +12,7 @@
     custom.care_instructions     — multi-line text
     custom.made_to_order_note    — multi-line text (already created in
                                     Phase 3's metafield setup)
-{% enddoc %}
+{% endcomment %}
 {% liquid
   assign weight = product.metafields.custom.material_weight.value
   assign composition = product.metafields.custom.material_composition.value
