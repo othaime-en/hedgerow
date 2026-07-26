@@ -1,4 +1,4 @@
-{% doc %}
+{% comment %}
   Cart drawer, rendered once via a standalone {% section %} call in
   layout/theme.liquid (not part of a section group — it's a persistent
   overlay, not reorderable page content).
@@ -8,7 +8,7 @@
   in. That means the free-shipping bar, line item prices, and upsell
   list are always computed fresh by Liquid — the JS never formats
   money or re-implements this section's logic client-side.
-{% enddoc %}
+{% endcomment %}
 {% liquid
   assign threshold = section.settings.free_shipping_threshold
   assign cart_product_ids = cart.items | map: 'product_id'
@@ -61,7 +61,9 @@
     {% if cart.item_count == 0 %}
       <div class="cart-drawer__empty">
         <p class="text-base">{{ 'cart.empty' | t }}</p>
-        <a href="{{ routes.all_products_collection_url }}" class="button button--primary">{{ 'cart.continue_shopping' | t }}</a>
+        <a href="{{ routes.all_products_collection_url }}" class="button button--primary">
+          {{- 'cart.continue_shopping' | t -}}
+        </a>
       </div>
     {% else %}
       <ul class="cart-drawer__items" role="list">
@@ -84,7 +86,11 @@
                   <li class="upsell-card">
                     <a href="{{ product.url }}" class="upsell-card__image">
                       {% if product.featured_image %}
-                        {{ product.featured_image | image_url: width: 200 | image_tag: loading: 'lazy', sizes: '100px' }}
+                        {{
+                          product.featured_image
+                          | image_url: width: 200
+                          | image_tag: loading: 'lazy', sizes: '100px'
+                        }}
                       {% endif %}
                     </a>
                     <div class="upsell-card__details">
@@ -93,7 +99,13 @@
                     </div>
                     {% form 'product', product %}
                       <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
-                      <button type="submit" class="button button--secondary upsell-card__add text-sm" {% if product.selected_or_first_available_variant.available == false %}disabled{% endif %}>
+                      <button
+                        type="submit"
+                        class="button button--secondary upsell-card__add text-sm"
+                        {% if product.selected_or_first_available_variant.available == false %}
+                          disabled
+                        {% endif %}
+                      >
                         {{ 'cart.add' | t }}
                       </button>
                     {% endform %}
