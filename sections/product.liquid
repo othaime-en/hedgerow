@@ -5,7 +5,6 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/product
 {% endcomment %}
 
-
 {% liquid
   assign current_variant = product.selected_or_first_available_variant
   assign pattern_name = product.metafields.custom.pattern_name.value
@@ -246,7 +245,12 @@
       {% endif %}
 
       <div class="product-size-guide__illustration">
-        <svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="SizeGuideTitle-{{ section.id }}">
+        <svg
+          viewBox="0 0 400 260"
+          xmlns="http://www.w3.org/2000/svg"
+          role="img"
+          aria-labelledby="SizeGuideTitle-{{ section.id }}"
+        >
           <title id="SizeGuideTitle-{{ section.id }}">{{ 'product.size_guide_illustration_title' | t }}</title>
           <line x1="20" y1="230" x2="380" y2="230" stroke="var(--color-sand)" stroke-width="1" />
           <rect x="164" y="134" width="72" height="96" fill="var(--color-sand)" opacity="0.5" />
@@ -256,9 +260,18 @@
           <rect x="184" y="189" width="32" height="18" rx="2" fill="var(--color-ink-muted)" opacity="0.6" />
         </svg>
         <ul class="product-size-guide__legend" role="list">
-          <li><span class="product-size-guide__swatch product-size-guide__swatch--small"></span>{{ 'product.size_small' | t }}</li>
-          <li><span class="product-size-guide__swatch product-size-guide__swatch--medium"></span>{{ 'product.size_medium' | t }}</li>
-          <li><span class="product-size-guide__swatch product-size-guide__swatch--large"></span>{{ 'product.size_large' | t }}</li>
+          <li>
+            <span class="product-size-guide__swatch product-size-guide__swatch--small"></span>
+            {{- 'product.size_small' | t }}
+          </li>
+          <li>
+            <span class="product-size-guide__swatch product-size-guide__swatch--medium"></span>
+            {{- 'product.size_medium' | t }}
+          </li>
+          <li>
+            <span class="product-size-guide__swatch product-size-guide__swatch--large"></span>
+            {{- 'product.size_large' | t }}
+          </li>
         </ul>
       </div>
     </div>
@@ -419,10 +432,6 @@
     height: 0.9rem;
   }
 
-  /* Sticky add-to-cart bar — Phase 5 directive #6. Its submit button
-     uses form="{{ form_id }}" so it rides the SAME product form (and
-     therefore the same Phase 2 cart-drawer submit listener) without
-     any duplicate add-to-cart logic here. */
   .product-sticky-bar {
     position: fixed;
     left: 0;
@@ -584,9 +593,7 @@
         if (label && checked) label.textContent = checked.value;
       });
 
-      const match = this.variants.find((variant) =>
-        variant.options.every((value, index) => value === selected[index])
-      );
+      const match = this.variants.find((variant) => variant.options.every((value, index) => value === selected[index]));
       if (match) this.updateVariant(match);
     }
 
