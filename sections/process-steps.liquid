@@ -1,0 +1,156 @@
+{% comment %}
+  Phase 6 — "timeline or process steps" section named in the
+  implementation plan, built for "How It's Made"-style pages: a
+  numbered sequence of steps connected by a line on desktop, stacked
+  on mobile. Each step is a block (blocks/process-step.liquid) so
+  merchants can add/remove/reorder steps from the Theme Editor.
+
+  @example
+  {% content_for 'block', type: 'process-step', id: 'step-1' %}
+{% endcomment %}
+
+<div
+  class="process-steps full-width section-padding"
+  style="{% render 'section-padding', section: section %}"
+>
+  <div class="container">
+    {% if section.settings.eyebrow != blank or section.settings.heading != blank %}
+      <div class="process-steps__header">
+        {% if section.settings.eyebrow != blank %}
+          <span class="eyebrow">{{ section.settings.eyebrow }}</span>
+        {% endif %}
+        {% if section.settings.heading != blank %}
+          <h2 class="text-2xl">{{ section.settings.heading }}</h2>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if section.blocks.size > 0 %}
+      <div class="process-steps__grid" style="--step-count: {{ section.blocks.size }};">
+        {% content_for 'blocks' %}
+      </div>
+    {% elsif request.design_mode %}
+      <div class="process-steps__empty-state">
+        <p class="text-base">{{ 'process_steps.empty_state' | t }}</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .process-steps__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+    max-width: 60ch;
+  }
+
+  .process-steps__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .process-steps__empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 8rem;
+    background-color: var(--color-surface);
+    color: var(--color-ink-muted);
+    border-radius: var(--radius-md);
+  }
+
+  @media (min-width: 750px) {
+    .process-steps__grid {
+      grid-template-columns: repeat(var(--step-count), 1fr);
+      gap: var(--space-5);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.process_steps",
+  "blocks": [{ "type": "process-step" }],
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "How it's made"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "From sketch to shelf"
+    },
+    {
+      "type": "header",
+      "content": "t:general.spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.process_steps",
+      "blocks": [
+        {
+          "type": "process-step",
+          "settings": {
+            "step_number": "01",
+            "heading": "Pattern is designed",
+            "description": "Every motif starts as an original drawing or painting before it's digitized."
+          }
+        },
+        {
+          "type": "process-step",
+          "settings": {
+            "step_number": "02",
+            "heading": "You place an order",
+            "description": "Nothing is printed until someone chooses it — that's the whole point."
+          }
+        },
+        {
+          "type": "process-step",
+          "settings": {
+            "step_number": "03",
+            "heading": "Printed to order",
+            "description": "OEKO-TEX certified inks, printed on natural-fiber bases in small batches."
+          }
+        },
+        {
+          "type": "process-step",
+          "settings": {
+            "step_number": "04",
+            "heading": "Checked and shipped",
+            "description": "Every piece is inspected by hand before it leaves for your door."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
