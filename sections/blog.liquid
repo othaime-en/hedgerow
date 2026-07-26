@@ -5,31 +5,173 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/blog
 {% endcomment %}
 
-<h1>{{ blog.title }}</h1>
-
-{% paginate blog.articles by 5 %}
-  {% for article in blog.articles %}
-    <div>
-      {% if article.image %}
-        {{ article.image | image_url: width: 1000 | image_tag }}
+<div class="blog-grid full-width section-padding" style="{% render 'section-padding', section: section %}">
+  <div class="container">
+    <div class="blog-grid__header">
+      {% if section.settings.eyebrow != blank %}
+        <span class="eyebrow">{{ section.settings.eyebrow }}</span>
       {% endif %}
-      <h2>
-        {{ article.title | link_to: article.url }}
-      </h2>
-      {% assign date = article.published_at | time_tag: format: 'date' %}
-      <p>{{ 'blog.article_metadata_html' | t: date: date, author: article.author }}</p>
-      <p>{{ article.excerpt }}</p>
+      <h1 class="text-2xl">{{ blog.title }}</h1>
     </div>
-  {% endfor %}
 
-  {%- if paginate.pages > 1 -%}
-    {{- paginate | default_pagination -}}
-  {%- endif -%}
-{% endpaginate %}
+    {% paginate blog.articles by section.settings.articles_per_page %}
+      {% if blog.articles.size > 0 %}
+        <div class="blog-grid__grid">
+          {% for article in blog.articles %}
+            <a href="{{ article.url }}" class="blog-grid__card card">
+              <div class="blog-grid__media">
+                {% if article.image %}
+                  {{
+                    article.image
+                    | image_url: width: 800
+                    | image_tag: loading: 'lazy', sizes: '(min-width: 750px) 33vw, 100vw', widths: '400, 600, 800'
+                  }}
+                {% else %}
+                  <div class="blog-grid__placeholder"></div>
+                {% endif %}
+              </div>
+              <div class="card__body">
+                {% if article.tags.size > 0 %}
+                  <span class="eyebrow">{{ article.tags.first }}</span>
+                {% endif %}
+                <h2 class="text-lg">{{ article.title }}</h2>
+                <p class="blog-grid__excerpt text-sm">
+                  {% if article.excerpt != blank %}
+                    {{ article.excerpt | strip_html | truncate: 110 }}
+                  {% else %}
+                    {{ article.content | strip_html | truncate: 110 }}
+                  {% endif %}
+                </p>
+                <span class="blog-grid__meta text-sm">
+                  {{- article.published_at | time_tag: format: 'date' -}}
+                </span>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="blog-grid__empty-state">
+          <p class="text-base">{{ 'blog.no_articles' | t }}</p>
+        </div>
+      {% endif %}
+
+      {% if paginate.pages > 1 %}
+        <div class="blog-grid__pagination">
+          {{ paginate | default_pagination }}
+        </div>
+      {% endif %}
+    {% endpaginate %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .blog-grid__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+  }
+
+  .blog-grid__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .blog-grid__card {
+    text-decoration: none;
+    color: var(--color-ink);
+    transition: box-shadow var(--duration-base) var(--ease-standard);
+  }
+  .blog-grid__media {
+    aspect-ratio: 4 / 3;
+    background-color: var(--color-surface);
+  }
+  .blog-grid__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .blog-grid__placeholder {
+    width: 100%;
+    height: 100%;
+  }
+  .blog-grid__excerpt {
+    color: var(--color-ink-muted);
+  }
+  .blog-grid__meta {
+    color: var(--color-ink-muted);
+    margin-top: auto;
+    padding-top: var(--space-1);
+  }
+
+  .blog-grid__empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 8rem;
+    background-color: var(--color-surface);
+    color: var(--color-ink-muted);
+    border-radius: var(--radius-md);
+  }
+
+  .blog-grid__pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-7);
+  }
+
+  @media (min-width: 750px) {
+    .blog-grid__grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-5);
+    }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
   "name": "t:general.blog",
-  "settings": []
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "The journal"
+    },
+    {
+      "type": "range",
+      "id": "articles_per_page",
+      "label": "t:labels.articles_per_page",
+      "min": 6,
+      "max": 24,
+      "step": 3,
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "t:general.spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:labels.padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:labels.padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 96
+    }
+  ]
 }
 {% endschema %}
